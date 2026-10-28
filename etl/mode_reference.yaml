@@ -1,0 +1,127 @@
+#######################################################################################
+
+# FILE NAME: mode_reference.yaml
+# AUTHOR: Caroline Adkins
+# LAST UPDATED: October 2026
+
+# This file serves as a reference for the different data extraction/processing methods
+# (modes) that can be applied to source data fields. Each mode is defined with its
+# specific parameters and usage guidelines.
+
+#######################################################################################
+
+##############################################################
+### NONE
+### returns a null Series; field is not present or derivable
+##############################################################
+
+FIELD_NAME:
+  mode: none
+  # notes: ""          # optional — use for caveats
+
+##############################################################
+### CONSTANT
+### returns a Series filled with a single literal value
+##############################################################
+
+FIELD_NAME:
+  mode: constant
+  constant: "VALUE"    # literal string or value written to every row
+  # notes: ""          
+
+##############################################################
+### COLUMN
+### copies a source column directly
+##############################################################
+
+FIELD_NAME:
+  mode: column
+  column: "SOURCE COLUMN NAME"    # exact column header in the spreadsheet
+  # notes: ""                     
+
+##############################################################
+### EXTRACT
+### derives a value from a source column via slice or regex
+##############################################################
+
+### method: slice
+
+FIELD_NAME:
+  mode: extract
+  extract:
+    column: "SOURCE COLUMN NAME"
+    method: slice
+    slice:
+      start: 0    # 0-indexed start position (inclusive)
+      end: 2      # 0-indexed end position (exclusive)
+  # notes: ""     
+
+
+### method: regex
+
+FIELD_NAME:
+  mode: extract
+  extract:
+    column: "SOURCE COLUMN NAME"
+    method: regex
+    regex:
+      pattern: "PATTERN"    # regular expression with at least one capture group
+      group: 1              # capture group to return: 0 = full match, 1 = first group, etc.
+  # notes: ""                 
+
+
+##############################################################
+### CROSSWALK
+### maps source column values to output values via an explicit 
+### dict
+##############################################################
+
+FIELD_NAME:
+  mode: crosswalk
+  crosswalk:
+    column: "SOURCE COLUMN NAME"    # source column whose values will be mapped
+    map:
+      "SOURCE_VALUE_1": "OUTPUT_VALUE_1"
+      "SOURCE_VALUE_2": "OUTPUT_VALUE_2"
+      "SOURCE_VALUE_3": "OUTPUT_VALUE_3"
+  # notes: ""                      
+
+##############################################################
+### CONCAT
+### joins multiple source columns with a delimiter
+##############################################################
+
+FIELD_NAME:
+  mode: concat
+  concat:
+    columns: ["SOURCE_COLUMN_1", "SOURCE_COLUMN_2"]   # list of source columns to concatenate
+    delimiter: " "                                    # string to insert between values
+  # notes: ""
+
+##############################################################
+### COMPUTE
+### applies an aggregate function (mean, min, max, etc.) across
+### multiple numeric source columns within each row
+##############################################################
+
+FIELD_NAME:
+  mode: compute
+  compute:
+    columns: ["SOURCE_COLUMN_1", "SOURCE_COLUMN_2"]   # list of numeric source columns to compute over
+    operation: mean # aggregate function: mean | median | sum | min | max
+  # notes: ""      
+
+##############################################################
+### REPROJECT
+### handles coordinate conversions and projection changes
+##############################################################
+
+FIELD_NAME:
+  mode: reproject
+  reproject:
+    x_columns: "COLUMN_NAME"   # source column(s) for x-coordinate values (latitude)
+    y_columns: "COLUMN_NAME"  # source column(s) for y-coordinate values (longitude)
+    input_format: "FORMAT" # input format: dms_colon | dms_compact | dms_expanded | northing_easting
+    crs: "CRS"             # optional, source coordinate reference system (e.g., EPSG:26917)
+  # notes: ""
+
