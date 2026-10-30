@@ -1,5 +1,6 @@
 # Custom tracking
 data/shapefiles/blm_plss/
+*sandbox.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
