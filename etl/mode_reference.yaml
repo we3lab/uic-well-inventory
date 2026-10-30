@@ -37,14 +37,15 @@ FIELD_NAME:
 FIELD_NAME:
   mode: column
   column: "SOURCE COLUMN NAME"    # exact column header in the spreadsheet
-  # notes: ""                     
+  # notes: ""                 
 
 ##############################################################
 ### EXTRACT
 ### derives a value from a source column via slice or regex
+### methods: slilce and regex
 ##############################################################
 
-### method: slice
+### method: slice (substring extraction)
 
 FIELD_NAME:
   mode: extract
@@ -57,7 +58,7 @@ FIELD_NAME:
   # notes: ""     
 
 
-### method: regex
+### method: regex (regular expression extraction)
 
 FIELD_NAME:
   mode: extract
@@ -68,23 +69,6 @@ FIELD_NAME:
       pattern: "PATTERN"    # regular expression with at least one capture group
       group: 1              # capture group to return: 0 = full match, 1 = first group, etc.
   # notes: ""                 
-
-
-##############################################################
-### CROSSWALK
-### maps source column values to output values via an explicit 
-### dict
-##############################################################
-
-FIELD_NAME:
-  mode: crosswalk
-  crosswalk:
-    column: "SOURCE COLUMN NAME"    # source column whose values will be mapped
-    map:
-      "SOURCE_VALUE_1": "OUTPUT_VALUE_1"
-      "SOURCE_VALUE_2": "OUTPUT_VALUE_2"
-      "SOURCE_VALUE_3": "OUTPUT_VALUE_3"
-  # notes: ""                      
 
 ##############################################################
 ### CONCAT
@@ -99,6 +83,40 @@ FIELD_NAME:
   # notes: ""
 
 ##############################################################
+### CROSSWALK
+### maps source column values to output values via an explicit 
+### dictionary
+##############################################################
+
+FIELD_NAME:
+  mode: crosswalk
+  crosswalk:
+    column: "SOURCE COLUMN NAME"    # source column whose values will be mapped
+    map:
+      "SOURCE_VALUE_1": "OUTPUT_VALUE_1"
+      "SOURCE_VALUE_2": "OUTPUT_VALUE_2"
+      "SOURCE_VALUE_3": "OUTPUT_VALUE_3"
+  # notes: ""        
+
+##############################################################
+### LOOKUP
+### returns a value from a reference table by matching
+### one already-resolved field
+###
+### Available Reference tables:
+###   us_counties   →  conus_county_boundaries.geojson
+###   us_states     →  conus_state_boundaries.geojson
+###   uic_authority →  uic_authority.xlsx
+##############################################################
+FIELD_NAME:
+  mode: lookup
+  lookup:
+    column: "RESOLVED_FIELD"     # a field already resolved earlier in processing pipeline
+    table: us_counties           # reference table name
+    key_field: "geoid"           # column in the table to match against
+    return_field: "county_name"  # column in the table to return
+
+##############################################################
 ### COMPUTE
 ### applies an aggregate function (mean, min, max, etc.) across
 ### multiple numeric source columns within each row
@@ -109,19 +127,77 @@ FIELD_NAME:
   compute:
     columns: ["SOURCE_COLUMN_1", "SOURCE_COLUMN_2"]   # list of numeric source columns to compute over
     operation: mean # aggregate function: mean | median | sum | min | max
-  # notes: ""      
+  # notes: "" 
 
 ##############################################################
 ### REPROJECT
-### handles coordinate conversions and projection changes
+### handles coordinate conversions and projection changes;
+### returns a DataFrame with latitude and longitude columns
 ##############################################################
 
-FIELD_NAME:
+coordinates: # only applicable to coordinates field name
   mode: reproject
   reproject:
     x_columns: "COLUMN_NAME"   # source column(s) for x-coordinate values (latitude)
     y_columns: "COLUMN_NAME"  # source column(s) for y-coordinate values (longitude)
-    input_format: "FORMAT" # input format: dms_colon | dms_compact | dms_expanded | northing_easting
-    crs: "CRS"             # optional, source coordinate reference system (e.g., EPSG:26917)
+    input_format: "FORMAT" # input format: dd |dms_colon | dms_compact | dms_expanded | northing_easting
+    crs: "CRS"             # optional, source coordinate reference system (e.g., EPSG:26917) Put None if unknown.
   # notes: ""
 
+##############################################################
+### GEOCODE
+### converts an address or PLSS description to coordinates
+### methods: plss and address
+##############################################################
+
+### method: plss (Public Land Survey System)
+
+coordinates: # only applicable to the coordinates field
+  mode: geocode
+  geocode:
+    method: plss
+    plss_fields: # indicate which PLSS fields are present in the source data and how to extract them using existing modes
+      state:
+        mode: XXX
+      meridian: 
+        mode: XXX
+      township_num:
+        mode: XXX
+      township_frac:
+        mode: XXX
+      township_dir:
+        mode: XXX
+      range_num:
+        mode: XXX
+      range_frac:
+        mode: XXX
+      range_dir:
+        mode: XXX
+      section:
+        mode: XXX
+  # notes: ""
+
+### method: address (Street Address)
+coordinates: # only applicable to coordinates field
+  mode: geocode
+  geocode:
+    method: address
+    address_fields: # indicate which address fields are present in the source data and how to extract them using existing modes
+      street:
+        mode: XXX
+      city:
+        mode: XXX
+      state:
+        mode: XXX
+      zip:
+        mode: XXX
+  # notes: ""
+
+##############################################################
+### LOCATE
+### derives a field value via spatial point-in-polygon join
+### using resolved coordinates
+##############################################################
+FIELD_NAME:
+  mode: locate
+  notes: "No column with [county code / state identifier / etc.]. Use location to determine [field]."
