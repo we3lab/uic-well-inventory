@@ -32,7 +32,7 @@ import pandas as pd
 from pyproj import CRS
 from pyproj.transformer import TransformerGroup
 
-from . import utils
+from .utils import *
 
 ###############################################################
 ### HELPERS
