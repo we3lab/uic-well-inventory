@@ -181,8 +181,10 @@ def mode_lookup(field_name, spec, df, resolved, refs):
         raise KeyError(f"{field_name}: return_field {return_field!r} not found in reference table {table_name!r}")
 
     # build a lookup map from the reference table that maps the resolved column values to the return values
-    lookup_map = dict(zip(ref_table[key_field], ref_table[return_field]))
-    return resolved[resolved_col].map(lookup_map)
+    # make sure the datatypes of the key field match the datatypes of the resolved column
+    lookup_map = dict(zip(ref_table[key_field].astype(str), ref_table[return_field]))
+    
+    return resolved[resolved_col].astype(str).map(lookup_map)
 
 MODE_DISPATCH["lookup"] = mode_lookup
 
