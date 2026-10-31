@@ -17,8 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 from . import processor, reference_tables
-
-PROJECT_ROOT = Path(__file__).parent.parent
+from .utils import *
 
 ##############################################################
 

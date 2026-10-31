@@ -32,8 +32,7 @@ import pandas as pd
 from pyproj import CRS
 from pyproj.transformer import TransformerGroup
 
-# default target CRS
-TARGET_CRS = "EPSG:4326"
+from . import utils
 
 ###############################################################
 ### HELPERS

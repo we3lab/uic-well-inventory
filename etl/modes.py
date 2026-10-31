@@ -23,10 +23,9 @@ import re
 from pathlib import Path
 
 from . import coordinate_conversions as coord_convert
+from .utils import *
 
-DISPATCH = {} # dispatch dictionary to map node names to their processing functions
-PROJECT_ROOT = Path(__file__).parent.parent
-TARGET_CRS = "EPSG:4326"
+MODE_DISPATCH = {} # dispatch dictionary to map node names to their processing functions
 
 ##############################################################
 ### NONE
@@ -36,7 +35,7 @@ TARGET_CRS = "EPSG:4326"
 def mode_none(_field_name, _spec, df, _resolved, _refs):
     return pd.Series([np.nan] * len(df), index=df.index, dtype=object)
 
-DISPATCH["none"] = mode_none
+MODE_DISPATCH["none"] = mode_none
 
 ##############################################################
 ### CONSTANT
@@ -45,7 +44,7 @@ DISPATCH["none"] = mode_none
 def mode_constant(_field_name, spec, df, _resolved, _refs):
     return pd.Series([spec["constant"]] * len(df), index=df.index, dtype=object)
 
-DISPATCH["constant"] = mode_constant
+MODE_DISPATCH["constant"] = mode_constant
 
 ##############################################################
 ### COLUMN
@@ -58,7 +57,7 @@ def mode_column(field_name, spec, df, _resolved, _refs):
     else:
         return df[col_name].copy()
     
-DISPATCH["column"] = mode_column
+MODE_DISPATCH["column"] = mode_column
 
 ##############################################################
 ### EXTRACT
@@ -96,7 +95,7 @@ def mode_extract(field_name, spec, df, _resolved, _refs):
         extracted = col_data.str.extract(pattern, expand=True)
         return extracted.iloc[:, group - 1] # return the specified group (0-indexed)
 
-DISPATCH["extract"] = mode_extract
+MODE_DISPATCH["extract"] = mode_extract
 
 ##############################################################
 ### CONCAT
@@ -115,7 +114,7 @@ def mode_concat(field_name, spec, df, _resolved, _refs):
     # and then replacing any resulting empty strings with NaN at the end
     return df[col_names].fillna("").astype(str).agg(delimiter.join, axis=1).replace("", np.nan)
 
-DISPATCH["concat"] = mode_concat
+MODE_DISPATCH["concat"] = mode_concat
 
 ##############################################################
 ### CROSSWALK
@@ -148,7 +147,7 @@ def mode_crosswalk(field_name, spec, df, _resolved, _refs):
     mapped_result = mapped_result.where(df[col_name].notna(), other=np.nan)
     return mapped_result
 
-DISPATCH["crosswalk"] = mode_crosswalk
+MODE_DISPATCH["crosswalk"] = mode_crosswalk
 
 ##############################################################
 ### LOOKUP
@@ -185,7 +184,7 @@ def mode_lookup(field_name, spec, df, resolved, refs):
     lookup_map = dict(zip(ref_table[key_field], ref_table[return_field]))
     return resolved[resolved_col].map(lookup_map)
 
-DISPATCH["lookup"] = mode_lookup
+MODE_DISPATCH["lookup"] = mode_lookup
 
 ##############################################################
 ### COMPUTE
@@ -218,7 +217,7 @@ def mode_compute(field_name, spec, df, _resolved, _refs):
         raise ValueError(f"{field_name}: unsupported compute operation {operation!r}")
     return ops[operation]
 
-DISPATCH["compute"] = mode_compute
+MODE_DISPATCH["compute"] = mode_compute
 
 ##############################################################
 ### REPROJECT
@@ -305,7 +304,7 @@ def mode_reproject(field_name, spec, df, _resolved, _refs):
 
     return result[["latitude", "longitude", "latlon_desc"]]
 
-DISPATCH["reproject"] = mode_reproject
+MODE_DISPATCH["reproject"] = mode_reproject
 
 ##############################################################
 ### GEOCODE
@@ -323,9 +322,9 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
         # populate temporary df with PLSS fields by row, using the appropriate mode for each field
         for field_name, field_spec in plss_field_dict.items():
             mode = field_spec["mode"]
-            if mode not in DISPATCH:
+            if mode not in MODE_DISPATCH:
                 raise ValueError(f"{field_name}: unsupported mode {mode!r} for PLSS field {field_name!r}")
-            plss_df[field_name] = DISPATCH[mode](field_name, field_spec, df, _resolved, refs)
+            plss_df[field_name] = MODE_DISPATCH[mode](field_name, field_spec, df, _resolved, refs)
 
         # combine PLSS fields into a single ID code
         plss_pad_dict = {
@@ -392,9 +391,9 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
         # populate temporary df with address fields by row, using the appropriate mode for each field
         for addr_field, addr_spec in addr_field_dict.items():
             mode = addr_spec["mode"]
-            if mode not in DISPATCH:
+            if mode not in MODE_DISPATCH:
                 raise ValueError(f"{field_name}: unsupported mode {mode!r} for address field {addr_field!r}")
-            addr_df[addr_field] = DISPATCH[mode](addr_field, addr_spec, df, _resolved, refs)
+            addr_df[addr_field] = MODE_DISPATCH[mode](addr_field, addr_spec, df, _resolved, refs)
 
         # build full address string from available fields
         addr_cols = [c for c in ['street', 'city', 'state', 'zip'] if c in addr_df.columns]
@@ -421,7 +420,7 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
 
         return addr_df[['latitude', 'longitude', 'latlon_desc']]
 
-DISPATCH["geocode"] = mode_geocode
+MODE_DISPATCH["geocode"] = mode_geocode
 
 ##############################################################
 ### LOCATE
@@ -458,4 +457,4 @@ def mode_locate(field_name, _spec, df, resolved, refs):
 
     return pd.Series(joined[field_name], index=df.index, dtype=object)
 
-DISPATCH["locate"] = mode_locate
+MODE_DISPATCH["locate"] = mode_locate

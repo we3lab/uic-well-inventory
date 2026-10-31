@@ -34,9 +34,8 @@ import geopandas as gpd
 import yaml
 
 from . import modes
+from .utils import *
 #from . import postprocess
-
-PROJECT_ROOT = Path(__file__).parent.parent
 
 def load_sheet(file_path, sheet_name, load_specs):
     """
@@ -121,7 +120,7 @@ def process_sheet(df, sheet_specs, source_file, source_sheet, refs):
             raise ValueError(f"Field spec for '{field_name}' must be a dict, got {type(field_specs)}")
         
         mode = field_specs.get("mode")
-        mode_fn = modes.DISPATCH.get(mode)
+        mode_fn = modes.MODE_DISPATCH.get(mode)
 
         if mode_fn is None:
             raise ValueError(f"Unknown mode '{mode}' for field '{field_name}'")

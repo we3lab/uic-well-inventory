@@ -43,8 +43,7 @@ import geopandas as gpd
 import os
 os.environ["OGR_ORGANIZE_POLYGONS"] = "SKIP" # improve load time for blm_plss.gdb by skipping interior rings of polygons
 
-PROJECT_ROOT = Path(__file__).parent.parent
-TARGET_CRS = "EPSG:4326"
+from .utils import *
 
 # container for all loaded reference tables
 class Refs:
