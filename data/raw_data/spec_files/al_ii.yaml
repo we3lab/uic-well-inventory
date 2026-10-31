@@ -1,0 +1,133 @@
+#######################################################################################
+# al_ii.yaml
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: "Alabama Oil and Gas Board"    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: "https://www.gsa.state.al.us/ogb/wellsmulti/"    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: "2026-10-30"    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "WellList":
+
+    load_specs:
+      header_row: 0      # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:AQ"  # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates:
+      mode: reproject
+      reproject:
+        x_columns: "Latitude"   # source column(s) for x-coordinate values (latitude)
+        y_columns: "Longitude"  # source column(s) for y-coordinate values (longitude)
+        input_format: "dd"      # input format: dd |dms_colon | dms_compact | dms_expanded | northing_easting
+        crs: null               # optional, source coordinate reference system (e.g., EPSG:26917) Put null if unknown.
+      notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."
+
+    state_alpha:
+      mode: constant
+      constant: "AL"
+    
+    epa_region:
+      mode: constant
+      constant: 4
+    
+    county_name:
+      mode: column
+      column: "County"
+    
+    geoid:
+      mode: lookup
+      lookup:
+        column: "county_name"     # a field already resolved earlier in processing pipeline
+        table: us_counties           # reference table name
+        key_field: "county_name"      # column in the table to match against
+        return_field: "geoid"  # column in the table to return
+
+    well_id:
+      mode: column
+      column: "API"
+    
+    well_id_desc:
+      mode: constant
+      constant: "API Number"
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "TypeDesc"    # source column whose values will be mapped
+        map:
+          "Gas Condensate": "0X"
+          "Coal Bed Methane": "0X"
+          "Undesignated": null
+          "Oil": "0X"
+          "Water Disposal": "2D"
+          "Water Injection": "2R"
+          "Gas": "0X"
+          "Shale Gas": "0X"
+      notes: "Full legend of well type descriptions available at https://www.gsa.state.al.us/img/ogb/well_symbols.pdf"
+
+    well_subtype_source_desc:
+      mode: column
+      column: "TypeDesc"
+    
+    well_class:
+      mode: lookup
+      lookup:
+        column: "well_subtype"     # a field already resolved earlier in processing pipeline
+        table: well_subtypes           # reference table name (us_counties | us_states | uic_authority)
+        key_field: "well_subtype"           # column in the table to match against
+        return_field: "well_class"  # column in the table to return
+    
+    well_depth_ft:
+      mode: column
+      column: "DTD"
+      notes: "DTD selected among DTD, LTD, TVD, and MD as the depth feature with the most complete data coverage."
+    
+    well_depth_ft_source_desc:
+      mode: constant
+      constant: "DTD"
+
+    operator:
+      mode: column
+      column: "Operator"
+    
+    operator_source_desc:
+      mode: constant
+      constant: "Company"
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "StatusDesc"    # source column whose values will be mapped
+        map:
+          "Plugged and Abandoned": "Inactive"
+          "Producing": "Active"
+          "Cancelled": "Other"
+          "Dry and Abandoned": "Inactive"
+          "Converted": "Other"
+          "Temporarily Abandoned": "Inactive"
+          "Plugged Back": "Other"
+          "Active": "Active"
+    
+    status_source_desc:
+      mode: column
+      column: "StatusDesc"
+
+    date:
+      mode: column
+      column: "SpudDate"
+
+    date_source_desc:
+      mode: constant
+      constant: "Spud Date"
+
+   
+      
