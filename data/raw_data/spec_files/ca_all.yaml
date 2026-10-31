@@ -1,0 +1,151 @@
+#######################################################################################
+# ca_all
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "Sheet1":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:AF"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates:
+      mode: reproject
+      reproject:
+        x_columns: "Location (Lat/Long)"  # source column(s) for x-coordinate values (latitude)
+        y_columns: "Location (Lat/Long)"  # source column(s) for y-coordinate values (longitude)
+        input_format: "dd_combined"       # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        crs: null                         # optional, source coordinate reference system (e.g., EPSG:26917) Put null if unknown.
+      notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."
+
+    state_alpha:
+      mode: constant
+      constant: "CA"        
+    
+    epa_region:
+      mode: constant
+      constant: 9        
+    
+    county_name:
+      mode: extract
+      extract:
+        column: "County"
+        method: regex
+        regex:
+          pattern: "^(.+?)(?:\\s+Offshore)?$"
+          group: 1
+      notes: "Some rows append 'Offshore' to the county name; strip before lookup."       
+    
+    geoid:
+      mode: lookup
+      lookup:
+        column: "county_name"     # a field already resolved earlier in processing pipeline
+        table: us_counties           # reference table name
+        key_field: "county_name"      # column in the table to match against
+        return_field: "geoid"     # column in the table to return      
+    
+    well_id:
+      mode: column
+      column: "API"
+    
+    well_id_desc:
+      mode: constant
+      constant: "API Number"  
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "Current Type"
+        map:
+          "Dry Gas": "0X"
+          "Gas": "0X"
+          "Oil & Gas": "0X"
+          "Core Hole": "0X"
+          "Dry Hole": "0X"
+          "Water Disposal": "2D"
+          "Multi-Purpose": "2X"
+          "Water Source": "0X"
+          "Waterflood": "2R"
+          "Gas Storage": "2H"
+          "Cyclic Steam": "2R"
+          "Injection": null
+          "Observation": "0X"
+          "Unknown": null
+          "Steamflood": "2R"
+          "Air Injection": "2R"
+          "Pressure Maintenance": "2R"
+          "Gas Disposal": "2D"
+          "Water Supply": "0X"
+          "Liquefied Gas": "2H"
+          "EPA Well: Class I": "1X"
+          "EPA Well: Class VI": "6X"
+          "EPA Well: Class V": "5X"
+
+    well_subtype_source_desc:
+      mode: column
+      column: "Current Type"
+    
+    well_class:
+      mode: lookup
+      lookup:
+        column: "well_subtype"     # a field already resolved earlier in processing pipeline
+        table: well_subtypes           # reference table name (us_counties | us_states | uic_authority)
+        key_field: "well_subtype"           # column in the table to match against
+        return_field: "well_class"  # column in the table to return
+    
+    well_depth_ft:
+      mode: none
+
+    well_depth_ft_source_desc:
+      mode: none
+
+    operator:
+      mode: column
+      column: "Operator Name"
+
+    operator_source_desc:
+      mode: constant
+      constant: "Company"
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Current Status"
+        map:
+          "Plugged & Abandoned" : "Inactive"
+          "Canceled" : "Inactive"
+          "Permitted": "Other"
+          "Unknown": "Other"
+          "Idle": "Inactive"
+          "Active": "Active"
+          "Not CalGEM Jurisdiction": "Other"
+          "Plugged": "Inactive"
+
+    status_source_desc:
+      mode: column
+      column: "Current Status"
+    
+    date:
+      mode: column
+      column: "Status Date"
+
+    date_source_desc:
+      mode: constant
+      constant: "Status Date"
+    
+
+   
+      

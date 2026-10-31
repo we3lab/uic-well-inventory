@@ -123,11 +123,11 @@ sheets:
 
     date:
       mode: column
-      column: "SpudDate"
+      column: "StatusDate"
 
     date_source_desc:
       mode: constant
-      constant: "Spud Date"
+      constant: "Status Date"
 
    
       
