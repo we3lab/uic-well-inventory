@@ -256,6 +256,18 @@ def mode_reproject(field_name, spec, df, _resolved, _refs):
         y = df[lat_col]
         x = df[lon_col]
         conv_note = "Reported"
+    elif input_format == "dd_combined": # decmial degrees in a single column
+        latlon_col = x_columns[0]
+        _check_cols(latlon_col)
+        def _extract_two_floats(val): # extract the float values from full string, assume first two are lat/lon in that order
+            nums = re.findall(r'-?\d+(?:\.\d+)?', str(val))
+            if len(nums) >= 2:
+                return pd.Series([float(nums[0]), float(nums[1])])
+            return pd.Series([np.nan, np.nan])
+        parsed = df[latlon_col].apply(_extract_two_floats)
+        y = parsed[0]
+        x = parsed[1]
+        conv_note = "Reported"
     elif input_format in ("dms_colon", "dms_compact"): # only one column for each of latitude and longitude
         lat_col, lon_col = x_columns[0], y_columns[0]
         _check_cols(lat_col, lon_col)

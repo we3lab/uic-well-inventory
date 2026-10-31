@@ -143,9 +143,9 @@ def build_inventory():
     processed_dfs = []
     for i, xlsx_file in enumerate(raw_data_dir.glob("*.xlsx")):
         # print header for each file
-        print("=" * 20)
+        print("=" * 60)
         print(f"{xlsx_file.name} ({i+1}/{len(list(raw_data_dir.glob('*.xlsx')))})")
-        print("=" * 20)
+        print("=" * 60)
 
         file_stem = xlsx_file.stem
         processed_df = processor.process_file(file_stem, refs)
@@ -153,9 +153,9 @@ def build_inventory():
 
         print(f"Finished processing {xlsx_file.name}.\n\n")
 
-    print("=" * 20)
+    print("=" * 60)
     print("Generating Master DataFrame")
-    print("=" * 20)
+    print("=" * 60)
 
     # concatenate all processed DataFrames into a single DataFrame
     print("Stacking all processed DataFrames into a single DataFrame...", end="\r")
