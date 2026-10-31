@@ -447,7 +447,11 @@ def mode_locate(field_name, _spec, df, resolved, refs):
     # create a GeoDataFrame from the resolved latitude and longitude
     if 'latitude' not in resolved or 'longitude' not in resolved:
         raise KeyError(f"{field_name}: resolved latitude and longitude fields not found")
-    coords_gdf = gpd.GeoDataFrame(resolved[['latitude', 'longitude']], geometry=gpd.points_from_xy(resolved['longitude'], resolved['latitude']), crs='EPSG:4326')
+    # resolved is a dictionary
+    coords_df = pd.DataFrame(index=df.index)
+    coords_df['latitude'] = resolved['latitude']
+    coords_df['longitude'] = resolved['longitude']
+    coords_gdf = gpd.GeoDataFrame(coords_df, geometry=gpd.points_from_xy(coords_df['longitude'], coords_df['latitude']), crs=TARGET_CRS)
     
     # perform spatial join to find which polygon each point falls into
     joined = gpd.sjoin(coords_gdf, gdf, how='left', predicate='within')

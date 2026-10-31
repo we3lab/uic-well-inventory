@@ -112,9 +112,9 @@ FIELD_NAME:
   mode: lookup
   lookup:
     column: "RESOLVED_FIELD"     # a field already resolved earlier in processing pipeline
-    table: us_counties           # reference table name
-    key_field: "geoid"           # column in the table to match against
-    return_field: "county_name"  # column in the table to return
+    table: table_name           # reference table name (us_counties | us_states | uic_authority)
+    key_field: "KEY_FIELD"           # column in the table to match against
+    return_field: "RETURN_FIELD"  # column in the table to return
 
 ##############################################################
 ### COMPUTE
@@ -141,7 +141,7 @@ coordinates: # only applicable to coordinates field name
     x_columns: "COLUMN_NAME"   # source column(s) for x-coordinate values (latitude)
     y_columns: "COLUMN_NAME"  # source column(s) for y-coordinate values (longitude)
     input_format: "FORMAT" # input format: dd |dms_colon | dms_compact | dms_expanded | northing_easting
-    crs: "CRS"             # optional, source coordinate reference system (e.g., EPSG:26917) Put None if unknown.
+    crs: "CRS"             # optional, source coordinate reference system (e.g., EPSG:26917) Put null if unknown.
   # notes: ""
 
 ##############################################################
