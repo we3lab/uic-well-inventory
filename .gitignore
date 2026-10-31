@@ -1,5 +1,5 @@
 # Custom tracking
-data/shapefiles/blm_plss/
+data/shapefiles/blm_plss.gdb
 *sandbox.ipynb
 
 # Byte-compiled / optimized / DLL files
