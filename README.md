@@ -36,14 +36,13 @@ Legend:
 2. 
 
 **date**
-1. Spud Date
-2. Permit Date
-3. First Production Date
-4. Status Date
+1. Status Date
+2. Spud Date
+3. Permit Date
+4. First Production Date
 
 # Processing Notes
-- crosswalk - if value is not in crosswalk keys, return null (check if this is default)
-- lookup - make sure values are all same type (probs string)
+- (NO ACTION NECESSARY UNLESS ERROR) crosswalk - if value is not in crosswalk keys, return null (check if this is default)
 
 # Post Processing Notes
 - coordinates
@@ -53,10 +52,12 @@ Legend:
     - cast to single type
 - county_name
     - match to us_counties somehow (check for identical match among counties in state and otherwise look for similar and have user verify)
+    - make sure lowercase
 - geoid
     - zfill to 5 digits and cast to string
 - well_subtype & well_subtype_desc
-    - 
+- well_id
+    - Uniform format for API?
 - well_class
     - Convert Class 0 to None
     - Convert numbers to numerals
@@ -70,8 +71,9 @@ Legend:
 2. Set up a template spec file (.yaml) based on spec_template.yaml.
 3. Determine the appropriate mode to use to extract the information for each field. See mode_reference.yaml for details on what each mode does and how to set up the field spec dictionaries.
 
-###### YOU ARE HERE
-- Implement processing notes
+###### TODO
+- ca_all
+    - Figure out coordinate outliers
 - Add a few more yamls
 - Implement post-processing
 - Add remaining yamls
