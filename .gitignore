@@ -2,6 +2,7 @@
 data/shapefiles/blm_plss.gdb
 *sandbox.ipynb
 data/processed_data
+spec_template.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
