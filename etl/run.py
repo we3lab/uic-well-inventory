@@ -77,7 +77,7 @@ def reorder_columns(df):
     """
     output_column_order = [
         "unique_id",
-        "latitude", "longitude",
+        "latitude", "longitude", "latlon_desc",
         "state_alpha", "state_name",
         "geoid","county_name",
         "epa_region",
@@ -114,7 +114,6 @@ def write_output(df):
             The DataFrame to write to parquet.
     """
     # create output directory if it doesn't exist
-    output_dir = PROJECT_ROOT / "data" / "processed_data"
     if not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -139,7 +138,6 @@ def build_inventory():
     print(f"Finished loading reference tables.\n\n")
 
     # iterate through all source files in raw_data/
-    raw_data_dir = PROJECT_ROOT / "data" / "raw_data"
     processed_dfs = []
     for i, xlsx_file in enumerate(raw_data_dir.glob("*.xlsx")):
         # print header for each file

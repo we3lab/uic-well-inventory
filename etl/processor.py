@@ -133,6 +133,7 @@ def process_sheet(df, sheet_specs, source_file, source_sheet, refs):
         if field_name == "coordinates":
             resolved["latitude"] = mode_output["latitude"]
             resolved["longitude"] = mode_output["longitude"]
+            resolved["latlon_desc"] = mode_output["latlon_desc"]
         else:
             resolved[field_name] = mode_output
 
