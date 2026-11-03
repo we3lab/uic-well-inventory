@@ -1,0 +1,165 @@
+#######################################################################################
+# fl_v
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: "FL Department of Environmental Protection"     # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: "richard.lobinske@floridadep.gov"    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: "2025-07-02"    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: "-"    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "Sheet1":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:AA"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates: # only applicable to coordinates field name
+      mode: reproject
+      reproject:
+        x_columns: "Longitude"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "Latitude"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dms_colon" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: none
+      # notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."     
+    
+    state_alpha:
+      mode: constant
+      constant: "FL"        
+    
+    epa_region:
+      mode: constant
+      constant: 4        
+    
+    county_name:
+      mode: column
+      column: "County"        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        column: "county_name"     # a field already resolved earlier in processing pipeline
+        table: us_counties           # reference table name
+        key_field: "county_name"      # column in the table to match against
+        return_field: "geoid"     # column in the table to return         
+    
+    well_id:
+      mode: column
+      column: "WACS ID"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "WACS ID"        
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "Injection Well Subtype"
+        map:
+          "REVERSE OSMOSIS CONCENTRATE WELL": "5A23"
+          "A/C RETURN-FLOW WELL (CLOSED-LOOP,NO ADDITIVES)": "5C2"
+          "COOLING WATER RETURN-FLOW WELL": "5A18"
+          "EXISTENCE NOT VERIFIED": "5X"
+          "DOMESTIC WASTEWATER WELL": "5D"
+          "STORMWATER DRAINAGE WELL": "5H1"
+          "LAKE LEVEL CONTROL WELL": "5H3"
+          "USE AND TYPE NOT VERIFIED": "5X"
+          "AQUIFER REMEDIATION WELL": "5B6"
+          "SLURRY AND OTHER MINING WELLS": "5L"
+          "ASR-POTABLE DRINKING WATER": "5B4"
+          "LAUNDRY WASTE WELL": "5A7"
+          "COOLING WATER RETURN WELL (ADDITIVES OR CONTACT)": "5A19"
+          "DOMESTIC WASTEWATER WELL MAJOR": "5D"
+          "OTHER DRAINAGE WELL": "5H3"
+          "RECHARGE WELL": "5B1"
+          "CONNECTOR WELL": "5B"
+          "DEWATERING WELL": "5X"
+          "SWIMMING POOL DRAINAGE WELL": "5H3"
+          "ASR-RAW OR PARTIALLY TREATED GROUND WATER": "5B4"
+          "SALINITY BARRIER WELL": "5B2"
+          "A/C RETURN-FLOW WELL (OPEN-LOOP OR ADDITIVES)": "5C2"
+          "INDUSTRIAL WASTEWATER WELL": "5A"
+          "ASR-RAW OR PARTIALLY TREATED SURFACE WATER": "5B4"
+          "ASR-OTHER": "5B4"
+          "ASR-REUSE": "5B4"
+          "SUBSIDENCE CONTROL WELL": "5B3"
+          "DOMESTIC AND REVERSE OSMOSIS COMBINED": "5X"
+          "DOMESTIC WASTEWATER SEPTIC TANK (LARGE CAPACITY)": "5F"
+          "OTHER CLASS V WELL (INCLUDES GEOTHERMAL)": "5X"
+          "MINE RECIRCULATION WELL": "5X"
+          "AQUACULTURE DRAINAGE WELL": "5C5"
+          "EXPERIMENTAL TECHNOLOGY WELL": "5G"
+          "DRAINFIELD-DOMESTIC/COMMERCIAL WASTEWATER": "5F"
+          "DRY WELL, SAND BACKFILLWELL, NUCLEAR DISPOSAL WELL": "5X"
+          
+
+    well_subtype_raw:
+      mode: column
+      column: "Injection Well Subtype"
+    
+    well_class:
+      mode: constant
+      constant: "V"
+    
+    well_depth_ft:
+      mode: extract
+      extract:
+        column: "Interval Begin-End"
+        method: regex
+        regex:
+          pattern: "^(\\d+)-"
+          group: 1
+    
+    well_depth_ft_desc:
+      mode: constant
+      constant: "TIZ"
+    
+    operator:
+      mode: column
+      column: "Site Name"
+    
+    operator_desc:
+      mode: constant
+      constant: "Site Name"
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Injection Well Status"
+        map:
+          "CLOSED NO MONITORING": "Inactive"
+          "ACTIVE": "Active"
+          "INACTIVE": "Inactive"
+          "UNABLE TO FIELD VERIFY INJECTION WELL": "Other"
+          "UNDER CONSTRUCTION": "Other"
+          "PERMANENTLY ABANDONED NOT APPROVED": "Inactive"
+          "PROPOSED": "Other"
+          "NOT ASSOCIATED WITH UIC STATUS UNKNOWN": "Other"
+          "PERMANENTLY ABANDONED APPROVED": "Inactive"
+          "ACTIVITY NOT PERMITTED": "Other"
+          "TRANSFERRED": "Other"
+          "NEVER OPERATED, PERMIT NEVER USED": "Other"
+          "WELL WAS NEVER CONSTRUCTED": "Other"
+          "CONVERTED TO A MONITOR WELL": "Other"
+          "UNKNOWN": "Other"
+    
+    status_raw:
+      mode: column
+      column: "Injection Well Status"
+    
+    date:
+      mode: column
+      column: "Facility Status Date"
+    
+    date_desc:
+      mode: constant
+      constant: "Status Date"
