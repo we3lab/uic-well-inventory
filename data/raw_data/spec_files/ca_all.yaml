@@ -95,7 +95,7 @@ sheets:
           "EPA Well: Class VI": "6X"
           "EPA Well: Class V": "5X"
 
-    well_subtype_source_desc:
+    well_subtype_raw:
       mode: column
       column: "Current Type"
     
@@ -110,14 +110,14 @@ sheets:
     well_depth_ft:
       mode: none
 
-    well_depth_ft_source_desc:
+    well_depth_ft_desc:
       mode: none
 
     operator:
       mode: column
       column: "Operator Name"
 
-    operator_source_desc:
+    operator_desc:
       mode: constant
       constant: "Company"
     
@@ -135,7 +135,7 @@ sheets:
           "Not CalGEM Jurisdiction": "Other"
           "Plugged": "Inactive"
 
-    status_source_desc:
+    status_raw:
       mode: column
       column: "Current Status"
     
@@ -143,7 +143,7 @@ sheets:
       mode: column
       column: "Status Date"
 
-    date_source_desc:
+    date_desc:
       mode: constant
       constant: "Status Date"
     

@@ -67,7 +67,7 @@ sheets:
     well_subtype:
       mode: none
 
-    well_subtype_source_desc:
+    well_subtype_raw:
       mode: none
     
     well_class:
@@ -77,27 +77,27 @@ sheets:
     well_depth_ft:
       mode: none
     
-    well_depth_ft_source_desc:
+    well_depth_ft_desc:
       mode: none
     
     operator:
       mode: column
       column: "Name"
     
-    operator_source_desc:
+    operator_desc:
       mode: constant
       constant: "Company"
     
     status:
       mode: none
     
-    status_source_desc:
+    status_raw:
       mode: none
     
     date:
       mode: none
     
-    date_source_desc:
+    date_desc:
       mode: none
     
 

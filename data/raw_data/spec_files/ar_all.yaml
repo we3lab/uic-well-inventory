@@ -84,7 +84,7 @@ sheets:
           "Coal Bed Methane Service Well": "0X"
           "Need Code": null
 
-    well_subtype_source_desc:
+    well_subtype_raw:
       mode: column
       column: "WellType"
     
@@ -99,27 +99,27 @@ sheets:
     well_depth_ft:
       mode: none
     
-    well_depth_ft_source_desc:
+    well_depth_ft_desc:
       mode: none
     
     operator:
       mode: column
       column: "EntityName"
     
-    operator_source_desc:
+    operator_desc:
       mode: constant
       constant: "Company"
     
     status:
       mode: none
     
-    status_source_desc:
+    status_raw:
       mode: none
     
     date:
       mode: none
     
-    date_source_desc:
+    date_desc:
       mode: none
     
 

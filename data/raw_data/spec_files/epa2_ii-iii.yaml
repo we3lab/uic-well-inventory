@@ -64,7 +64,7 @@ sheets:
     well_subtype:
       mode: none
 
-    well_subtype_source_desc:
+    well_subtype_raw:
       mode: none
     
     well_class:
@@ -80,7 +80,7 @@ sheets:
       mode: column
       column: "Well Specific Depth (ft)"
     
-    well_depth_ft_source_desc:
+    well_depth_ft_desc:
       mode: constant
       constant: "UK"
       notes: "Column is labeled Well Specific Depth which does not map to any known well depth measurement."
@@ -88,17 +88,17 @@ sheets:
     operator:
       mode: none
 
-    operator_source_desc:
+    operator_desc:
       mode: none
 
     status:
       mode: none
 
-    status_source_desc:
+    status_raw:
       mode: none
 
     date:
       mode: none
 
-    date_source_desc:
+    date_desc:
       mode: none

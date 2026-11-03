@@ -76,7 +76,7 @@ sheets:
       mode: column
       column: "Type"
 
-    well_subtype_source_desc:
+    well_subtype_raw:
       mode: lookup
       lookup:
         column: "well_subtype"     # a field already resolved earlier in processing pipeline
@@ -93,7 +93,7 @@ sheets:
       mode: column
       column: "Total Depth"
     
-    well_depth_ft_source_desc:
+    well_depth_ft_desc:
       mode: constant
       constant: "MD"
       notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
@@ -101,7 +101,7 @@ sheets:
     operator:
       mode: none
     
-    operator_source_desc:
+    operator_desc:
       mode: none
     
     status:
@@ -118,14 +118,14 @@ sheets:
           "Proposed": "Other"
           "Plugged & Abandoned (not State approved)": "Inactive"
     
-    status_source_desc:
+    status_raw:
       mode: column
       column: "Status"
     
     date:
       mode: none
     
-    date_source_desc:
+    date_desc:
       mode: none
   
   "R8 Perfs":
@@ -187,7 +187,7 @@ sheets:
       mode: column
       column: "Type"
 
-    well_subtype_source_desc:
+    well_subtype_raw:
       mode: lookup
       lookup:
         column: "well_subtype"     # a field already resolved earlier in processing pipeline
@@ -204,7 +204,7 @@ sheets:
       mode: column
       column: "Total Depth"
     
-    well_depth_ft_source_desc:
+    well_depth_ft_desc:
       mode: constant
       constant: "MD"
       notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
@@ -212,7 +212,7 @@ sheets:
     operator:
       mode: none
     
-    operator_source_desc:
+    operator_desc:
       mode: none
     
     status:
@@ -227,12 +227,12 @@ sheets:
           "Temporarily Abandoned": "Inactive"
           "Under Construction": "Other"
     
-    status_source_desc:
+    status_raw:
       mode: column
       column: "Status"
     
     date:
       mode: none
     
-    date_source_desc:
+    date_desc:
       mode: none

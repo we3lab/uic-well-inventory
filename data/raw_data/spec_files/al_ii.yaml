@@ -75,7 +75,7 @@ sheets:
           "Shale Gas": "0X"
       notes: "Full legend of well type descriptions available at https://www.gsa.state.al.us/img/ogb/well_symbols.pdf"
 
-    well_subtype_source_desc:
+    well_subtype_raw:
       mode: column
       column: "TypeDesc"
     
@@ -92,7 +92,7 @@ sheets:
       column: "DTD"
       notes: "DTD selected among DTD, LTD, TVD, and MD as the depth feature with the most complete data coverage."
     
-    well_depth_ft_source_desc:
+    well_depth_ft_desc:
       mode: constant
       constant: "DTD"
 
@@ -100,7 +100,7 @@ sheets:
       mode: column
       column: "Operator"
     
-    operator_source_desc:
+    operator_desc:
       mode: constant
       constant: "Company"
     
@@ -118,7 +118,7 @@ sheets:
           "Plugged Back": "Other"
           "Active": "Active"
     
-    status_source_desc:
+    status_raw:
       mode: column
       column: "StatusDesc"
 
@@ -126,7 +126,7 @@ sheets:
       mode: column
       column: "StatusDate"
 
-    date_source_desc:
+    date_desc:
       mode: constant
       constant: "Status Date"
 

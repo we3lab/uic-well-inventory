@@ -83,11 +83,11 @@ def reorder_columns(df):
         "epa_region",
         "primacy", "responsible_office",
         "well_id", "well_id_desc",
-        "well_class", "well_subtype", "well_subtype_desc", "well_subtype_source_desc",
-        "well_depth_ft", "well_depth_ft_source_desc",
-        "operator", "operator_source_desc",
-        "status", "status_source_desc",
-        "date", "date_source_desc",
+        "well_class", "well_subtype", "well_subtype_desc", "well_subtype_raw",
+        "well_depth_ft", "well_depth_ft_desc",
+        "operator", "operator_desc",
+        "status", "status_raw",
+        "date", "date_desc",
         "_source_file", "_source_sheet", "_source_row"
     ]
 
