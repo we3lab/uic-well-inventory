@@ -149,7 +149,7 @@ def build_inventory():
         processed_df = processor.process_file(file_stem, refs)
         processed_dfs.append(processed_df)
 
-        print(f"Finished processing {xlsx_file.name}.\n\n")
+        print(f"Finished processing {xlsx_file.name}.                                \n\n")
 
     print("=" * 60)
     print("Generating Master DataFrame")
