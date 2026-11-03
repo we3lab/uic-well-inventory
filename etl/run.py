@@ -77,7 +77,7 @@ def reorder_columns(df):
     """
     output_column_order = [
         "unique_id",
-        "latitude", "longitude", "latlong_flag",
+        "latitude", "longitude", "location_flag",
         "state_alpha", "state_name",
         "geoid","county_name",
         "epa_region",

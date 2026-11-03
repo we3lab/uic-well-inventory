@@ -52,7 +52,7 @@ def postprocess_coordinates(coords_df, _resolved, refs):
         (coords_df['longitude'] < minx - box_buffer) | (coords_df['longitude'] > maxx + box_buffer)
     )
     coords_df.loc[out_of_bounds, ['latitude', 'longitude']] = np.nan
-    coords_df.loc[out_of_bounds, 'latlong_flag'] = 'Invalid (Out of Bounds)'
+    coords_df.loc[out_of_bounds, 'location_flag'] = 'OOB'
 
     return coords_df
 
@@ -164,3 +164,21 @@ def postprocess_date(series, _resolved, _refs):
     return series
 
 FIELD_POSTPROCESSORS_DISPATCH['date'] = postprocess_date
+
+##############################################################
+### SHEET POSTPROCESSORS
+##############################################################
+
+def postprocess_sheet(df, refs):
+
+    # if coordinates are NaN but county is provided, return county centroid coordinates and flag
+    missing_coords = df['latitude'].isna() & df['longitude'].isna() & df['geoid'].notna()
+    county_df = refs['us_counties']
+
+    if missing_coords.any():
+        geoid_to_centroid = county_df.to_crs('EPSG:3857').set_index('geoid').geometry.centroid.to_crs(TARGET_CRS) # convert to projected CRS for centroid calculation, then back to target CRS
+        missing_geoids = df.loc[missing_coords, 'geoid']
+        centroids = missing_geoids.map(geoid_to_centroid)
+        df.loc[missing_coords, 'latitude']   = centroids.apply(lambda p: p.y if pd.notna(p) else np.nan).values
+        df.loc[missing_coords, 'longitude']  = centroids.apply(lambda p: p.x if pd.notna(p) else np.nan).values
+        df.loc[missing_coords, 'latlon_desc'] = 'CCTR'

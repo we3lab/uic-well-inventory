@@ -133,7 +133,7 @@ def process_sheet(df, sheet_specs, source_file, source_sheet, refs):
         if field_name == "coordinates":
             resolved["latitude"] = mode_output["latitude"]
             resolved["longitude"] = mode_output["longitude"]
-            resolved["latlong_flag"] = mode_output["latlong_flag"]
+            resolved["location_flag"] = mode_output["location_flag"]
         else:
             resolved[field_name] = mode_output
 
@@ -145,12 +145,12 @@ def process_sheet(df, sheet_specs, source_file, source_sheet, refs):
                     coords_df = pd.DataFrame({
                         "latitude"   : resolved["latitude"],
                         "longitude"  : resolved["longitude"],
-                        "latlong_flag": resolved["latlong_flag"],
+                        "location_flag": resolved["location_flag"],
                     }, index=df.index)
                     postprocessor_output = postprocessor_fn(coords_df, resolved, refs)
                     resolved["latitude"]    = postprocessor_output["latitude"]
                     resolved["longitude"]   = postprocessor_output["longitude"]
-                    resolved["latlong_flag"] = postprocessor_output["latlong_flag"]
+                    resolved["location_flag"] = postprocessor_output["location_flag"]
                 else:
                     resolved[field_name] = postprocessor_fn(resolved[field_name], resolved, refs)
             except Exception as e:
