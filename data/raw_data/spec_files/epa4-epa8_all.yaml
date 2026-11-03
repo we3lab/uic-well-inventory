@@ -1,0 +1,238 @@
+#######################################################################################
+# epa4-epa8_all.yaml
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: "EPA Region 4 & 8"     # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: "zipf.lynn@epa.gov"    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: "2025-08-15"    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: "Received post FOIA submission"    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "R4 Perfs":
+
+    load_specs:
+      header_row: 2      # 0-indexed row number of the header row in the source sheet
+      data_cols: "C:N"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates: # only applicable to coordinates field name
+      mode: reproject
+      reproject:
+        x_columns: "Longitude"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "Latitude"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dd" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: crosswalk
+          crosswalk:
+            column: "Datum"
+            map:
+              "1" : "EPSG:4267" # NAD27
+              "2" : "EPSG:4269" # NAD83
+              "3" : "EPSG:4326" # WGS84
+              "4" : "EPSG:4269" # NAD83 - assumed
+      notes: "Unknown source CRS for some rows. Assuming NAD83 (EPSG:4269)."      
+    
+    state_alpha:
+      mode: locate
+      notes: "No column with definitive state code available. Using location to determine state."        
+    
+    epa_region:
+      mode: lookup
+      lookup:
+        column: "state_alpha"     # a field already resolved earlier in processing pipeline
+        table: uic_authority           # reference table name (us_counties | us_states | uic_authority)
+        key_field: "state_alpha"           # column in the table to match against
+        return_field: "epa_region"  # column in the table to return
+
+    
+    county_name:
+      mode: locate
+      notes: "No column with county code available. Use location to determine county name."        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        column: "county_name"     # a field already resolved earlier in processing pipeline
+        table: us_counties           # reference table name
+        key_field: "county_name"      # column in the table to match against
+        return_field: "geoid"     # column in the table to return         
+    
+    well_id:
+      mode: column
+      column: "Permit #"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "Permit Number"        
+    
+    well_subtype:
+      mode: column
+      column: "Type"
+
+    well_subtype_source_desc:
+      mode: lookup
+      lookup:
+        column: "well_subtype"     # a field already resolved earlier in processing pipeline
+        table: well_subtypes           # reference table name (us_counties | us_states | uic_authority)
+        key_field: "well_subtype"           # column in the table to match against
+        return_field: "well_subtype_desc"  # column in the table to return
+      notes: "Well subtype descriptions are derived from this source, so source and EPA descriptions will match exactly."
+
+    well_class:
+      mode: column
+      column: "Class"
+    
+    well_depth_ft:
+      mode: column
+      column: "Total Depth"
+    
+    well_depth_ft_source_desc:
+      mode: constant
+      constant: "MD"
+      notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
+    
+    operator:
+      mode: none
+    
+    operator_source_desc:
+      mode: none
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Status"
+        map:
+          "Active": "Active"
+          "Temporarily Abandoned": "Inactive"
+          "Plugged & Abandoned": "Inactive"
+          "Shut In: no injection < 2 years, active lease": "Inactive"
+          "Not Applicable": "Other"
+          "Under Construction": "Other"
+          "Proposed": "Other"
+          "Plugged & Abandoned (not State approved)": "Inactive"
+    
+    status_source_desc:
+      mode: column
+      column: "Status"
+    
+    date:
+      mode: none
+    
+    date_source_desc:
+      mode: none
+  
+  "R8 Perfs":
+
+    load_specs:
+      header_row: 2      # 0-indexed row number of the header row in the source sheet
+      data_cols: "C:N"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates: # only applicable to coordinates field name
+      mode: reproject
+      reproject:
+        x_columns: "Longitude"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "Latitude"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dd" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: crosswalk
+          crosswalk:
+            column: "Datum"
+            map:
+              "1" : "EPSG:4267" # NAD27
+              "2" : "EPSG:4269" # NAD83
+              "3" : "EPSG:4326" # WGS84
+              "4" : "EPSG:4269" # NAD83 - assumed
+      notes: "Unknown source CRS for some rows. Assuming NAD83 (EPSG:4269)."      
+    
+    state_alpha:
+      mode: locate
+      notes: "No column with definitive state code available. Using location to determine state."        
+    
+    epa_region:
+      mode: lookup
+      lookup:
+        column: "state_alpha"     # a field already resolved earlier in processing pipeline
+        table: uic_authority           # reference table name (us_counties | us_states | uic_authority)
+        key_field: "state_alpha"           # column in the table to match against
+        return_field: "epa_region"  # column in the table to return
+
+    county_name:
+      mode: locate
+      notes: "No column with county code available. Use location to determine county name."        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        column: "county_name"     # a field already resolved earlier in processing pipeline
+        table: us_counties           # reference table name
+        key_field: "county_name"      # column in the table to match against
+        return_field: "geoid"     # column in the table to return         
+    
+    well_id:
+      mode: column
+      column: "Permit #"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "Permit Number"        
+    
+    well_subtype:
+      mode: column
+      column: "Type"
+
+    well_subtype_source_desc:
+      mode: lookup
+      lookup:
+        column: "well_subtype"     # a field already resolved earlier in processing pipeline
+        table: well_subtypes           # reference table name (us_counties | us_states | uic_authority)
+        key_field: "well_subtype"           # column in the table to match against
+        return_field: "well_subtype_desc"  # column in the table to return
+      notes: "Well subtype descriptions are derived from this source, so source and EPA descriptions will match exactly."
+
+    well_class:
+      mode: column
+      column: "Class"
+    
+    well_depth_ft:
+      mode: column
+      column: "Total Depth"
+    
+    well_depth_ft_source_desc:
+      mode: constant
+      constant: "MD"
+      notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
+    
+    operator:
+      mode: none
+    
+    operator_source_desc:
+      mode: none
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Status"
+        map:
+          "Not Applicable": "Other"
+          "Active": "Active"
+          "Plugged & Abandoned": "Inactive"
+          "Proposed": "Other"
+          "Temporarily Abandoned": "Inactive"
+          "Under Construction": "Other"
+    
+    status_source_desc:
+      mode: column
+      column: "Status"
+    
+    date:
+      mode: none
+    
+    date_source_desc:
+      mode: none

@@ -25,10 +25,11 @@ sheets:
     coordinates:
       mode: reproject
       reproject:
-        x_columns: "Latitude"   # source column(s) for x-coordinate values (latitude)
-        y_columns: "Longitude"  # source column(s) for y-coordinate values (longitude)
+        x_columns: "Longitude"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "Latitude"  # source column(s) for y-coordinate values (latitude)
         input_format: "dd"      # input format: dd |dms_colon | dms_compact | dms_expanded | northing_easting
-        crs: null               # optional, source coordinate reference system (e.g., EPSG:26917) Put null if unknown.
+        datum:
+          mode: none
       notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."
 
     state_alpha:

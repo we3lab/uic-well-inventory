@@ -1,0 +1,105 @@
+#######################################################################################
+# epa3_ii
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: "EPA Region 3"     # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: "zipf.lynn@epa.go"    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: "2025-08-15"    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: "Received post FOIA submission"    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "Query1":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:J"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates:
+      mode: reproject
+      reproject:
+        x_columns: ["Long Degree", "Long Min", "Long Sec"]   # source column(s) for x-coordinate values (longitude)
+        y_columns: ["Lat Degree", "Lat Min", "Lat Sec"]  # source column(s) for y-coordinate values (latitude)
+        input_format: "dms_expanded" 
+        datum:
+          mode: none
+    
+    state_alpha:
+      mode: extract
+      extract:
+        column: "ID"
+        method: slice
+        slice:
+          start: 0
+          end: 2       
+    
+    epa_region:
+      mode: constant
+      constant: 3        
+    
+    county_name:
+      mode: locate
+      notes: "No column with county code available. Use location to determine county name."        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        column: "county_name"     # a field already resolved earlier in processing pipeline
+        table: us_counties           # reference table name
+        key_field: "county_name"      # column in the table to match against
+        return_field: "geoid"     # column in the table to return       
+    
+    well_id:
+      mode: column
+      column: "API"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "API Number"        
+    
+    well_subtype:
+      mode: none
+
+    well_subtype_source_desc:
+      mode: none
+    
+    well_class:
+      mode: constant
+      constant: "II"
+    
+    well_depth_ft:
+      mode: none
+    
+    well_depth_ft_source_desc:
+      mode: none
+    
+    operator:
+      mode: column
+      column: "Name"
+    
+    operator_source_desc:
+      mode: constant
+      constant: "Company"
+    
+    status:
+      mode: none
+    
+    status_source_desc:
+      mode: none
+    
+    date:
+      mode: none
+    
+    date_source_desc:
+      mode: none
+    
+
+   
+      
