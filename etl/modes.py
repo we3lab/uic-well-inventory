@@ -25,7 +25,7 @@ from pathlib import Path
 from . import coordinate_conversions as coord_convert
 from .utils import *
 
-MODE_DISPATCH = {} # dispatch dictionary to map node names to their processing functions
+MODE_DISPATCH = {} # dispatch dictionary to map mode names to their processing functions
 
 ##############################################################
 ### NONE
@@ -227,14 +227,17 @@ MODE_DISPATCH["compute"] = mode_compute
 ### returns a DataFrame with latitude and longitude columns
 ##############################################################
 def mode_reproject(field_name, spec, df, _resolved, _refs):
-    reproject_spec  = spec["reproject"]
+    reproject_spec = spec["reproject"]
     input_format = reproject_spec["input_format"]
-    source_crs = reproject_spec["crs"]
-    if source_crs is not None:
-        crs_note = "Known CRS"
-    else:
-        crs_note = "Unknown CRS"
-        source_crs = "EPSG:4269" # default to NAD83 if not specified
+
+    # resolve datum via mode dispatch — produces a per-row Series of CRS strings
+    datum_spec = reproject_spec["datum"]
+    datum_mode = datum_spec.get("mode")
+    if datum_mode not in MODE_DISPATCH:
+        raise ValueError(f"{field_name}: unknown datum mode {datum_mode!r}")
+    datum_series = MODE_DISPATCH[datum_mode]("datum", datum_spec, df, _resolved, _refs)
+    datum_series = datum_series.fillna("EPSG:4269") # default to NAD83 for null values
+    crs_note = "Unknown CRS" if datum_mode == "none" else "Known CRS"
 
     # normalize x_columns and y_columns to lists and make sure they all exist
     x_columns = reproject_spec.get("x_columns", [])
@@ -251,7 +254,7 @@ def mode_reproject(field_name, spec, df, _resolved, _refs):
 
     # handle different input formats for coordinates
     if input_format == "dd": # decimal degrees, one column for each of latitude and longitude
-        lat_col, lon_col = x_columns[0], y_columns[0]
+        lon_col, lat_col = x_columns[0], y_columns[0]
         _check_cols(lat_col, lon_col)
         y = df[lat_col]
         x = df[lon_col]
@@ -269,7 +272,7 @@ def mode_reproject(field_name, spec, df, _resolved, _refs):
         x = parsed[1]
         conv_note = "Reported"
     elif input_format in ("dms_colon", "dms_compact"): # only one column for each of latitude and longitude
-        lat_col, lon_col = x_columns[0], y_columns[0]
+        lon_col, lat_col = x_columns[0], y_columns[0]
         _check_cols(lat_col, lon_col)
         if input_format == "dms_colon":
             delimiter = reproject_spec.get("delimiter", ":")
@@ -280,8 +283,8 @@ def mode_reproject(field_name, spec, df, _resolved, _refs):
             x = coord_convert.dms_compact_to_dd(df[lon_col], errors="coerce")
         conv_note = "Converted"
     elif input_format == "dms_expanded":
-        # x_columns = [deg, min, sec] for latitude
-        # y_columns = [deg, min, sec] for longitude
+        # x_columns = [deg, min, sec] for longitude
+        # y_columns = [deg, min, sec] for latitude
         if len(x_columns) < 3 or len(y_columns) < 3:
             raise ValueError(
                 f"{field_name}: dms_expanded requires 3 columns each in x_columns and "
@@ -289,19 +292,19 @@ def mode_reproject(field_name, spec, df, _resolved, _refs):
             )
         _check_cols(*x_columns[:3], *y_columns[:3])
         fill_missing = reproject_spec.get("fill_missing", False)
-        y = coord_convert.dms_expanded_to_dd(
+        x = coord_convert.dms_expanded_to_dd(
             df[x_columns[0]], df[x_columns[1]], df[x_columns[2]],
             fill_missing=fill_missing,
         )
-        x = coord_convert.dms_expanded_to_dd(
+        y = coord_convert.dms_expanded_to_dd(
             df[y_columns[0]], df[y_columns[1]], df[y_columns[2]],
             fill_missing=fill_missing,
         )
         conv_note = "Converted"
 
     elif input_format == "northing_easting":
-        # x_columns[0] = northing (y-direction), y_columns[0] = easting (x-direction)
-        northing_col, easting_col = x_columns[0], y_columns[0]
+        # y_columns[0] = northing (y-direction), x_columns[0] = easting (x-direction)
+        northing_col, easting_col = y_columns[0], x_columns[0]
         _check_cols(northing_col, easting_col)
         x = df[easting_col]
         y = df[northing_col]
@@ -312,11 +315,16 @@ def mode_reproject(field_name, spec, df, _resolved, _refs):
             f"{field_name}: unsupported reproject input_format {input_format!r}"
         )
 
-    # apply crs_transform to all formats
-    result = coord_convert.crs_transform(x=x, y=y, crs=source_crs)
-    result["latlon_desc"] = f"{conv_note} ({crs_note})"
+    # apply crs_transform once per unique datum value
+    result = pd.DataFrame({"latitude": np.nan, "longitude": np.nan}, index=df.index)
+    for crs_value in datum_series.unique():
+        mask = datum_series == crs_value
+        group_result = coord_convert.crs_transform(x=x[mask], y=y[mask], crs=crs_value)
+        result.loc[mask, "latitude"] = group_result["latitude"].values
+        result.loc[mask, "longitude"] = group_result["longitude"].values
 
-    return result[["latitude", "longitude", "latlon_desc"]]
+    result["latlong_flag"] = f"{conv_note} ({crs_note})"
+    return result[["latitude", "longitude", "latlong_flag"]]
 
 MODE_DISPATCH["reproject"] = mode_reproject
 
@@ -379,7 +387,7 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
             if plss_id in blm_df.index:
                 match = blm_df.loc[[plss_id]]
                 centroid = match.geometry.centroid.to_crs(TARGET_CRS).iloc[0]
-                return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'latlon_desc': "Geocoded (Section Centroid)"})
+                return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'latlong_flag': "Geocoded (Section Centroid)"})
             else:
                 # if no match found, try to find a match up to Range level (ignoring section)
                 plss_id_range = plss_id[:-6]
@@ -387,16 +395,16 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
                 if not match.empty:
                     union_pt = match.union_all().centroid
                     centroid = gpd.GeoSeries([union_pt], crs='EPSG:3857').to_crs(TARGET_CRS).iloc[0]
-                    return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'latlon_desc': "Geocoded (Range Centroid)"})
+                    return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'latlong_flag': "Geocoded (Range Centroid)"})
                 else:
-                    return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'latlon_desc': "No PLSS Match Found"})
+                    return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'latlong_flag': "No PLSS Match Found"})
 
         # compute coordinates once per unique PLSS ID, then join back to avoid redundant lookups
         plss_centroids = plss_df['plss_id'].drop_duplicates().apply(_get_parcel_coords)
         plss_centroids.index = plss_df['plss_id'].drop_duplicates().values
-        plss_df[['latitude', 'longitude', 'latlon_desc']] = plss_df['plss_id'].map(plss_centroids.to_dict(orient='index')).apply(pd.Series)
+        plss_df[['latitude', 'longitude', 'latlong_flag']] = plss_df['plss_id'].map(plss_centroids.to_dict(orient='index')).apply(pd.Series)
 
-        return plss_df[['latitude', 'longitude', 'latlon_desc']]
+        return plss_df[['latitude', 'longitude', 'latlong_flag']]
 
     elif method == "address":
         addr_df = pd.DataFrame(index=df.index) # empty dataframe to store address fields by row
@@ -420,19 +428,19 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
 
         def _geocode_address(address):
             if pd.isna(address):
-                return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'latlon_desc': np.nan})
+                return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'latlong_flag': np.nan})
             location = geocode(address)
             if location:
-                return pd.Series({'latitude': location.latitude, 'longitude': location.longitude, 'latlon_desc': 'Geocoded (Address)'})
+                return pd.Series({'latitude': location.latitude, 'longitude': location.longitude, 'latlong_flag': 'Geocoded (Address)'})
             else:
-                return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'latlon_desc': 'No Address Match Found'})
+                return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'latlong_flag': 'No Address Match Found'})
 
         unique_addrs = addr_df['full_address'].drop_duplicates()
         addr_centroids = unique_addrs.apply(_geocode_address)
         addr_centroids.index = unique_addrs.values
-        addr_df[['latitude', 'longitude', 'latlon_desc']] = addr_df['full_address'].map(addr_centroids.to_dict(orient='index')).apply(pd.Series)
+        addr_df[['latitude', 'longitude', 'latlong_flag']] = addr_df['full_address'].map(addr_centroids.to_dict(orient='index')).apply(pd.Series)
 
-        return addr_df[['latitude', 'longitude', 'latlon_desc']]
+        return addr_df[['latitude', 'longitude', 'latlong_flag']]
 
 MODE_DISPATCH["geocode"] = mode_geocode
 
@@ -444,14 +452,14 @@ MODE_DISPATCH["geocode"] = mode_geocode
 def mode_locate(field_name, _spec, df, resolved, refs):
     # determine which scale this field corresponds to (county or state)
     field_to_level_dict = {
-        'state_alpha' : 'state',
-        'county_name' : 'county',
-        'geoid'       : 'county'
+        'state_alpha' : 'states',
+        'county_name' : 'counties',
+        'geoid'       : 'counties'
     }
     if field_name not in field_to_level_dict:
         raise ValueError(f"{field_name}: unsupported field for locate mode")
     level = field_to_level_dict[field_name]
-    gdf = refs[f'us_{level}s'].copy() # get the appropriate reference geodataframe
+    gdf = refs[f'us_{level}'].copy() # get the appropriate reference geodataframe
 
     # ensure the reference geodataframe is in the target CRS
     if gdf.crs != TARGET_CRS:

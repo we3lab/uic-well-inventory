@@ -34,8 +34,8 @@ import geopandas as gpd
 import yaml
 
 from . import modes
+from . import postprocessor
 from .utils import *
-#from . import postprocess
 
 def load_sheet(file_path, sheet_name, load_specs):
     """
@@ -111,7 +111,7 @@ def process_sheet(df, sheet_specs, source_file, source_sheet, refs):
     source_rows = pd.Series(range(len(df)), index=df.index) + header_row + 2 # +1 for 1-indexing, +1 for header row
     resolved["_source_row"] = source_rows
 
-    # iterate through each field in sheet_specs (other than load_specs) and dispatch modes
+    # iterate through each field in sheet_specs (other than load_specs) and dispatch mode functions
     for field_name, field_specs in sheet_specs.items():
         print(f"\tProcessing {field_name}...", end="\r")
         if field_name == "load_specs":
@@ -133,13 +133,28 @@ def process_sheet(df, sheet_specs, source_file, source_sheet, refs):
         if field_name == "coordinates":
             resolved["latitude"] = mode_output["latitude"]
             resolved["longitude"] = mode_output["longitude"]
-            resolved["latlon_desc"] = mode_output["latlon_desc"]
+            resolved["latlong_flag"] = mode_output["latlong_flag"]
         else:
             resolved[field_name] = mode_output
 
-        print(f"\tFinished processing {field_name}.")
-
-    ##### ADD POST-PROCESSING STEPS AS NECESSARY ######
+        # run postprocessing if applicable
+        postprocessor_fn = postprocessor.FIELD_POSTPROCESSORS_DISPATCH.get(field_name)
+        if postprocessor_fn is not None:
+            try:
+                if field_name == "coordinates":
+                    coords_df = pd.DataFrame({
+                        "latitude"   : resolved["latitude"],
+                        "longitude"  : resolved["longitude"],
+                        "latlong_flag": resolved["latlong_flag"],
+                    }, index=df.index)
+                    postprocessor_output = postprocessor_fn(coords_df, resolved, refs)
+                    resolved["latitude"]    = postprocessor_output["latitude"]
+                    resolved["longitude"]   = postprocessor_output["longitude"]
+                    resolved["latlong_flag"] = postprocessor_output["latlong_flag"]
+                else:
+                    resolved[field_name] = postprocessor_fn(resolved[field_name], resolved, refs)
+            except Exception as e:
+                raise RuntimeError(f"Error postprocessing field '{field_name}': {e}") from e
 
     processed_df = pd.DataFrame(resolved, index=df.index)
 
