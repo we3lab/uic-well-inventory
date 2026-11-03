@@ -181,4 +181,6 @@ def postprocess_sheet(df, refs):
         centroids = missing_geoids.map(geoid_to_centroid)
         df.loc[missing_coords, 'latitude']   = centroids.apply(lambda p: p.y if pd.notna(p) else np.nan).values
         df.loc[missing_coords, 'longitude']  = centroids.apply(lambda p: p.x if pd.notna(p) else np.nan).values
-        df.loc[missing_coords, 'latlon_desc'] = 'CCTR'
+        df.loc[missing_coords, 'location_flag'] = 'CCTR'
+    
+    return df
