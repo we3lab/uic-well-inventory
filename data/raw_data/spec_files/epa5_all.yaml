@@ -77,7 +77,7 @@ sheets:
       mode: lookup
       lookup:
         column: "well_subtype"     # a field already resolved earlier in processing pipeline
-        table: well_subyptes           # reference table name
+        table: well_subtypes           # reference table name
         key_field: "well_subtype"           # column in the table to match against
         return_field: "well_class"  # column in the table to return
     
