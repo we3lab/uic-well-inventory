@@ -1,0 +1,129 @@
+#######################################################################################
+# md_v
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "UIC Permits Query 2025":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:X"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates: # only applicable to coordinates field name
+      mode: reproject
+      reproject:
+        x_columns: "Longitude"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "Latitude"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dms_compact" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: none
+      notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."     
+    
+    state_alpha:
+      mode: constant
+      constant: "MD"        
+    
+    epa_region:
+      mode: constant
+      constant: 3        
+    
+    county_name:
+      mode: column
+      column: "County"        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
+        return_field: "geoid"  # column in the table to return
+    
+    well_id:
+      mode: column
+      column: "UIC_PERMIT"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "Permit Number"        
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "Class_V_Well_Type"
+        map: 
+          "5W12": "5D"
+          "5W20": "5A"
+          "5W32": "5F"
+          "5X13": "5I"
+          "5A7": "5C2"
+          "5X26": "5B6"
+          "5D4": "5H1"
+          "5A19": "5A19"
+          "526": "5B6"
+      notes: "Assuming that these subtypes are coded using EPA Legacy Codes (https://archive.epa.gov/region9/water/archive/web/pdf/32types-gwpc.pdf)"
+
+    well_subtype_raw:
+      mode: crosswalk
+      crosswalk:
+        column: "Class_V_Well_Type"
+        map: 
+          "5W12": "Domestic Wastewater Treatment Plant Effluent Well"
+          "5W20": "Industrial Process Waste and Water Disposal"
+          "5W32": "Septic System (Drainfield disposal method)"
+          "5X13": "Mining, Sand, or Other Backfill Well"
+          "5A7": "Heat Pump/Air Conditioning Return Flow Well"
+          "5X26": "Aquifer Remediation Well"
+          "5D4": "Industrial Drainage Well"
+          "5A19": "Cooling Water Return Flow"
+          "526": "Aquifer Remediation Well"
+      notes: "Assuming that these subtypes are coded using EPA Legacy Codes (https://archive.epa.gov/region9/water/archive/web/pdf/32types-gwpc.pdf)"
+    
+    well_class:
+      mode: constant
+      constant: "V"
+    
+    well_depth_ft:
+      mode: none
+    
+    well_depth_ft_desc:
+      mode: none
+    
+    operator:
+      mode: column
+      column: "Fac_Name"
+
+    operator_desc:
+      mode: constant
+      constant: "Site Name"
+    
+    status:
+      mode: none
+    
+    status_raw:
+      mode: none
+    
+    date:
+      mode: column
+      column: "Exp_Date"
+
+    date_desc:
+      mode: constant
+      constant: "Permit Expiration Date"
+    
+
+   
+      
