@@ -87,8 +87,8 @@ sheets:
     
     well_depth_ft_desc:
       mode: constant
-      constant: "UK"
-      notes: "Depth reported as Total Depth but unsure of what it represents."
+      constant: "MD"
+      notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
     
     operator:
       mode: column
