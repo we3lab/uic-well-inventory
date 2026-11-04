@@ -1,0 +1,143 @@
+#######################################################################################
+# il_i
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "Sheet1":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:F"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates: # only applicable to coordinates field
+      mode: geocode
+      geocode:
+        method: address
+        address_fields: # indicate which address fields are present in the source data and how to extract them using existing modes
+          street:
+            mode: column
+            column: "Street Address"
+          city:
+            mode: column
+            column: "City"
+          state:
+            mode: constant
+            constant: "IL"
+          zip:
+            mode: column
+            column: "Zip"
+
+    state_alpha:
+      mode: constant
+      constant: "IL"
+    
+    epa_region:
+      mode: constant
+      constant: 5        
+    
+    county_name:
+      mode: locate
+      notes: "No column with county code available. Use location to determine county name."        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        column: "county_name"     # a field already resolved earlier in processing pipeline
+        table: us_counties           # reference table name
+        key_field: "county_name"      # column in the table to match against
+        return_field: "geoid"     # column in the table to return         
+    
+    well_id:
+      mode: column
+      column: "Site ID Number"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "Site ID"        
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "Type & # of Wells"
+        map:
+          "2 - Hazardous": "1H"
+          "2*-Non-hazardous": "1I"
+          "2-Non-hazardous": "1I"
+          "1-Non-hazardous": "1I"
+          "1** - Hazardous": "1H"
+
+    well_subtype_raw:
+      mode: extract
+      extract:
+        column: "Type & # of Wells"
+        method: regex
+        regex:
+          pattern: "-(.+)$"
+          group: 1
+    
+    well_class:
+      mode: constant
+      constant: "I"
+    
+    well_depth_ft:
+      mode: none
+    
+    well_depth_ft_desc:
+      mode: none
+    
+    operator:
+      mode: column
+      column: "Facility"
+    
+    operator_desc:
+      mode: constant
+      constant: "Site Name"
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Site ID Number"
+        map:
+          "0418080001": "Active"
+          "0650155010": "Active"
+          "1898995007": "Active"
+          "0554645002": "Active"
+          "0418080002": "Inactive"
+          "1558010006": "Inactive"
+      notes: "Status information provided in file formatting, so mapped directly for each site here."
+
+    status_raw:
+      mode: crosswalk
+      crosswalk:
+        column: "Site ID Number"
+        map:
+          "0418080001": "Active"
+          "0650155010": "Facility’s permit allows construction of two injection wells for non-hazardous wastewater. At the present time, only one injection well has been built at these facilities."
+          "1898995007": "Facility’s permit allows construction of two injection wells for non-hazardous wastewater. At the present time, only one injection well has been built at these facilities."
+          "0554645002": "Active"
+          "0418080002": "Plugged and Abandoned"
+          "1558010006": "Plugged and Abandoned"
+      notes: "Status information provided in file formatting, so mapped directly for each site here."
+
+    date:
+      mode: none
+    
+    date_desc:
+      mode: none
+    
+
+   
+      
