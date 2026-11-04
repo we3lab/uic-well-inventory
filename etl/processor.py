@@ -156,6 +156,8 @@ def process_sheet(df, sheet_specs, source_file, source_sheet, refs):
             except Exception as e:
                 raise RuntimeError(f"Error postprocessing field '{field_name}': {e}") from e
 
+        print(f"\tFinished processing {field_name}.{' ' * 20}")
+        
     # pull into a single dataframe
     processed_df = pd.DataFrame(resolved, index=df.index)
 
@@ -199,7 +201,7 @@ def process_file(file_stem, refs):
 
     processed_sheets = [] # list to hold processed DataFrames for each sheet
     for i, sheet_name in enumerate(file_specs['sheets'].keys()):
-        print(f"Processing sheet {i+1}/{len(file_specs['sheets'])}: {sheet_name}...", end='\r')
+        print(f"Processing sheet {i+1}/{len(file_specs['sheets'])}: {sheet_name}...")
         
         # get spec for this sheet
         sheet_specs = file_specs['sheets'][sheet_name] # sheet spec = full yaml contents for this sheet
