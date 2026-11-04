@@ -79,7 +79,9 @@ def load():
     us_states = gpd.read_file(shapefiles_dir / "conus_state_boundaries.geojson")[["state_alpha", "state_name", "statefp", "geometry"]].to_crs(TARGET_CRS)
     us_counties = gpd.read_file(shapefiles_dir / "conus_county_boundaries.geojson")[["geoid", "statefp", "county_name", "geometry"]].to_crs(TARGET_CRS)
     us_counties = us_counties.merge(us_states[["statefp", "state_alpha"]], on="statefp", how="left") # add state alpha to counties df
-    blm_plss = gpd.read_file(shapefiles_dir / "blm_plss.gdb", layer="PLSSFirstDivision")
+    blm_plss = gpd.read_file(shapefiles_dir / "blm_plss.gdb", layer="PLSSFirstDivision").to_crs('EPSG:3857')
+    blm_plss.index = blm_plss['FRSTDIVID'].astype(str)
+    blm_plss = blm_plss.drop(columns=['FRSTDIVID'])
     uic_authority = pd.read_excel(supporting_data_dir / "uic_authority.xlsx", dtype=str)
     well_subtypes = pd.read_excel(supporting_data_dir / "well_subtypes.xlsx", dtype=str)
 

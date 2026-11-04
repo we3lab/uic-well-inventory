@@ -132,8 +132,8 @@ def mode_crosswalk(field_name, spec, df, _resolved, _refs):
         raise KeyError(f"{field_name}: column {col_name!r} not found in source data")
     
     # normalize source values and map keys to uppercase, stripped of whitespace
-    normalized_mapping = {str(k).strip().upper(): v for k, v in mapping.items()}
-    normalized_source = df[col_name].astype(str).str.strip().str.upper()
+    normalized_mapping = {re.sub(r'\s+', ' ', str(k).strip().upper()): v for k, v in mapping.items()}
+    normalized_source = df[col_name].astype(str).str.strip().str.upper().str.replace(r'\s+', ' ', regex=True)
 
     # raise error if any non-null source values were not mapped (check after normalization)
     in_map = normalized_source.isin(normalized_mapping.keys())
@@ -350,18 +350,22 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
             'range_num': 3, 
             'section': 2}
 
+        required_plss_fields = ['meridian', 'township_num', 'township_dir', 'range_num', 'range_dir', 'section']
+
         def _generate_plss_id(row):
+            if any(pd.isna(row[f]) for f in required_plss_fields):
+                return np.nan
             try:
                 state = str(row['state']).upper()
-                meridian = str(row['meridian']).zfill(plss_pad_dict['meridian'])
-                township_num = str(row['township_num']).zfill(plss_pad_dict['township_num'])
+                meridian = str(int(float(str(row['meridian'])))).zfill(plss_pad_dict['meridian'])
+                township_num = str(int(float(str(row['township_num'])))).zfill(plss_pad_dict['township_num'])
                 township_frac = row['township_frac'] if pd.notna(row['township_frac']) else '0'
                 township_dir = str(row['township_dir']).upper()
-                range_num = str(row['range_num']).zfill(plss_pad_dict['range_num'])
+                range_num = str(int(float(str(row['range_num'])))).zfill(plss_pad_dict['range_num'])
                 range_frac = row['range_frac'] if pd.notna(row['range_frac']) else '0'
                 range_dir = str(row['range_dir']).upper()
-                section = str(row['section']).zfill(plss_pad_dict['section'])
-            
+                section = str(int(float(str(row['section'])))).zfill(plss_pad_dict['section'])
+
                 return f"{state}{meridian}{township_num}{township_frac}{township_dir}{range_num}{range_frac}{range_dir}0SN{section}0"
             except Exception as e:
                 raise ValueError(f"Error generating PLSS ID for row {row.name}: {e}")
@@ -373,7 +377,9 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
             blm_df = refs['blm_plss']
         else:
             try:
-                blm_df = gpd.read_file(PROJECT_ROOT / 'data/shapefiles/blm_plss.gdb', layer='PLSSFirstDivision').to_crs('EPSG:3857').set_index('FRSTDIVID')
+                blm_df = gpd.read_file(PROJECT_ROOT / 'data/shapefiles/blm_plss.gdb', layer='PLSSFirstDivision').to_crs('EPSG:3857')
+                blm_df.index = blm_df['FRSTDIVID'].astype(str)
+                blm_df.drop(columns=['FRSTDIVID'], inplace=True)
             except:
                 raise FileNotFoundError(f"BLM PLSS shapefile not found. Please ensure the file exists at {PROJECT_ROOT / 'data/shapefiles/blm_plss.gdb'}. If not, the file can be downloaded directly from https://gbp-blm-egis.hub.arcgis.com/datasets/283939812bc34c11bad695a1c8152faf/about.")
 
@@ -382,7 +388,7 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
             if plss_id in blm_df.index:
                 match = blm_df.loc[[plss_id]]
                 centroid = match.geometry.centroid.to_crs(TARGET_CRS).iloc[0]
-                return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'location_flag': "Geocoded (Section Centroid)"})
+                return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'location_flag': "SCTR"})
             else:
                 # if no match found, try to find a match up to Range level (ignoring section)
                 plss_id_range = plss_id[:-6]
@@ -390,14 +396,18 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
                 if not match.empty:
                     union_pt = match.union_all().centroid
                     centroid = gpd.GeoSeries([union_pt], crs='EPSG:3857').to_crs(TARGET_CRS).iloc[0]
-                    return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'location_flag': "Geocoded (Range Centroid)"})
+                    return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'location_flag': "RCTR"})
                 else:
                     return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'location_flag': "No PLSS Match Found"})
 
         # compute coordinates once per unique PLSS ID, then join back to avoid redundant lookups
-        plss_centroids = plss_df['plss_id'].drop_duplicates().apply(_get_parcel_coords)
-        plss_centroids.index = plss_df['plss_id'].drop_duplicates().values
-        plss_df[['latitude', 'longitude', 'location_flag']] = plss_df['plss_id'].map(plss_centroids.to_dict(orient='index')).apply(pd.Series)
+        unique_ids = plss_df['plss_id'].dropna().drop_duplicates()
+        plss_centroids = unique_ids.apply(_get_parcel_coords)
+        plss_centroids.index = unique_ids.values
+        centroids_dict = plss_centroids.to_dict(orient='index')
+        nan_row = {'latitude': np.nan, 'longitude': np.nan, 'location_flag': np.nan}
+        records = [centroids_dict[pid] if pd.notna(pid) and pid in centroids_dict else nan_row for pid in plss_df['plss_id']]
+        plss_df[['latitude', 'longitude', 'location_flag']] = pd.DataFrame(records, index=plss_df.index)
 
         return plss_df[['latitude', 'longitude', 'location_flag']]
 

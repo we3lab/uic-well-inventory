@@ -12,6 +12,7 @@
 
 #######################################################################################
 
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -123,26 +124,40 @@ def write_output(df):
 
 ##############################################################
     
-def build_inventory():
+def build_inventory(file_stems=None):
     """
     Main processing pipeline for building UIC well inventory.
 
-    Loads reference tables, iterates through all source files in raw_data/, 
-    processes each file according to its YAML specs, adds derived fields, 
+    Loads reference tables, iterates through source files in raw_data/,
+    processes each file according to its YAML specs, adds derived fields,
     reorders columns, and writes the final output to a parquet file.
-    
+
+    Arguments:
+        file_stems : list of str, optional
+            If provided, only process files with these stems (e.g. ["la_all", "fl_v"]).
+            If None, all .xlsx files in raw_data/ are processed.
+
     """
     # load reference tables
     print("Loading reference tables...", end="\r")
     refs = reference_tables.load()
     print(f"Finished loading reference tables.\n\n")
 
-    # iterate through all source files in raw_data/
+    # determine which files to process
+    if file_stems is not None:
+        xlsx_files = [raw_data_dir / f"{stem}.xlsx" for stem in file_stems]
+        missing = [f for f in xlsx_files if not f.exists()]
+        if missing:
+            raise FileNotFoundError(f"Source files not found: {[f.name for f in missing]}")
+    else:
+        xlsx_files = sorted(raw_data_dir.glob("*.xlsx"))
+
+    # iterate through source files
     processed_dfs = []
-    for i, xlsx_file in enumerate(raw_data_dir.glob("*.xlsx")):
+    for i, xlsx_file in enumerate(xlsx_files):
         # print header for each file
         print("=" * 60)
-        print(f"{xlsx_file.name} ({i+1}/{len(list(raw_data_dir.glob('*.xlsx')))})")
+        print(f"{xlsx_file.name} ({i+1}/{len(xlsx_files)})")
         print("=" * 60)
 
         file_stem = xlsx_file.stem
@@ -179,4 +194,5 @@ def build_inventory():
     print("\n\nComplete.")
     
 if __name__ == "__main__":
-    build_inventory()
+    stems = sys.argv[1:] if len(sys.argv) > 1 else None
+    build_inventory(file_stems=stems)
