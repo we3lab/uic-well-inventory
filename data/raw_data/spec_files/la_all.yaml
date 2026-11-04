@@ -1,0 +1,196 @@
+#######################################################################################
+# la_all
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "Sheet1":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:W"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates: # only applicable to the coordinates field
+      mode: geocode
+      geocode:
+        method: plss
+        plss_fields: # indicate which PLSS fields are present in the source data and how to extract them using existing modes
+          state:
+            mode: constant
+            constant: "LA"
+          meridian: 
+            mode: crosswalk
+            crosswalk:
+              column: "Meridian"
+              map:
+                "W" : 18
+                "E" : 24
+          township_num:
+            mode: extract
+            extract:
+              column: "Township"
+              method: regex
+              regex:
+                pattern: '(\d+)(?=[A-Za-z])'
+                group: 1
+          township_frac:
+            mode: none
+          township_dir:
+            mode: extract
+            extract:
+              column: "Township"
+              method: regex
+              regex:
+                pattern: '\d+([A-Za-z])'
+                group: 1
+          range_num:
+            mode: extract
+            extract:
+              column: "Range"
+              method: regex
+              regex:
+                pattern: '(\d+)(?=[A-Za-z])'
+                group: 1
+          range_frac:
+            mode: none
+          range_dir:
+            mode: extract
+            extract:
+              column: "Range"
+              method: regex
+              regex:
+                pattern: '\d+([A-Za-z])'
+                group: 1
+          section:
+            mode: column
+            column: "Section"  
+    
+    state_alpha:
+      mode: constant
+      constant: "LA"        
+    
+    epa_region:
+      mode: constant
+      constant: 6        
+    
+    county_name:
+      mode: extract
+      extract:
+        column: "Parish"
+        method: regex
+        regex:
+          pattern: '\(\d+\)\s+(.+)'
+          group: 1
+                 
+    
+    geoid:
+      mode: lookup
+      lookup:
+        column: "county_name"     # a field already resolved earlier in processing pipeline
+        table: us_counties           # reference table name
+        key_field: "county_name"      # column in the table to match against
+        return_field: "geoid"     # column in the table to return         
+    
+    well_id:
+      mode: column
+      column: "Well Serial"
+
+    well_id_desc:
+      mode: constant
+      constant: "Well ID" 
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "Class Type"
+        map:
+          "(1-C) COMMERCIAL HAZARDOUS INDUSTRIAL": "1H"
+          "(1) HAZARDOUS INDUSTRIAL": "1H"
+          "(2-C) COMMERCIAL NONHAZARDOUS INDUSTRIAL": "1I"
+          "(2) NONHAZARDOUS INDUSTRIAL": "1I"
+          "(23) SPECIAL DRAINAGE WELLS": "5H"
+          "(25) INJECTION MONITOR WELL": "5X"
+          "(30) STRAT TEST": "5X"
+          "(34) EXPERIMENTAL": "5G"
+          "(4) PRODUCING/CYCLIC INJECTION": "2R"
+          "(5-C) COMMUNITY SALT WATER DISPOSAL": "2D"
+          "(5-SC) SWD FOR SALT CAVERN": "2D"
+          "(5-SCC) COMMUNITY SWD FOR SALT CAVERN": "2D"
+          "(5) PRODUCED SALT WATER": "2D"
+          "(7) COMMERCIAL SWD": "2D"
+          "(9-CO) ER -- INJECTION (CO2)": "2R"
+          "(9-FF) ER -- FIRE FLOOD": "2R"
+          "(9-IG) ER -- INJECTION (GAS)": "2R"
+          "(9-IGW) ER -- INJECTION (GAS AND WATER)": "2R"
+          "(9-IO) ER -- INJECTION (OTHER)": "2R"
+          "(9-IW) ER -- INJECTION (WATER)": "2R"
+          "(9-O) ER -- OBSERVATION": "2R"
+          "(10-I) INACTIVE HYDROCARBON STO (LIQUID @ STP)": "2H"
+          "(10) HYDROCARBON STO (LIQUID @ STP)": "2H"
+          "(11-FO) FORMATION STORAGE OBSERVATION ONLY": "5X"
+          "(11-FS) FORMATION GAS STORAGE": "2H"
+          "(11-L) LPG STORAGE SALT DOME": "2H"
+          "(11-LI) INACTIVE LPG STORAGE SALT DOME": "2H"
+          "(11-N) NATURAL GAS STORAGE SALT DOME": "2H"
+          "(11-NI) INACTIVE NATURAL GAS STORAGE SALT DOME": "2H"
+          "(12-B) BRINE SOLUTION MINING": "3A"
+          "(12-BI) INACTIVE BRINE SOLUTION MINING": "3A"
+          "(17) AQUIFER REMEDIATION": "5B6"
+
+    well_subtype_raw:
+      mode: column
+      column: "Class Type"
+    
+    well_class:
+      mode: column
+      column: "Class"
+    
+    well_depth_ft:
+      mode: column
+      column: "Measured Depth"
+    
+    well_depth_ft_desc:
+      mode: constant
+      constant: "MD"
+    
+    operator:
+      mode: none
+    
+    operator_desc:
+      mode: none
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Status"
+        map:
+          "(09) ACTIVE- INJECTION"           : "Active"
+          "(11) ACTIVE PRODUCING/CYCLIC INJCT" : "Active"
+
+    status_raw:
+      mode: column
+      column: "Status"
+    
+    date:
+      mode: column
+      column: "Well Status Date"
+    
+    date_desc:
+      mode: constant
+      constant: "Status Date"
+    
+
+   
+      
