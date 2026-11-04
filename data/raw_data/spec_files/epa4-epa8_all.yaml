@@ -46,9 +46,9 @@ sheets:
     epa_region:
       mode: lookup
       lookup:
-        column: "state_alpha"     # a field already resolved earlier in processing pipeline
+        columns: "state_alpha"     # a field already resolved earlier in processing pipeline
         table: uic_authority           # reference table name (us_counties | us_states | uic_authority)
-        key_field: "state_alpha"           # column in the table to match against
+        key_fields: "state_alpha"           # column in the table to match against
         return_field: "epa_region"  # column in the table to return
 
     
@@ -59,9 +59,9 @@ sheets:
     geoid:
       mode: lookup
       lookup:
-        column: "county_name"     # a field already resolved earlier in processing pipeline
-        table: us_counties           # reference table name
-        key_field: "county_name"      # column in the table to match against
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
         return_field: "geoid"     # column in the table to return         
     
     well_id:
@@ -79,9 +79,9 @@ sheets:
     well_subtype_raw:
       mode: lookup
       lookup:
-        column: "well_subtype"     # a field already resolved earlier in processing pipeline
+        columns: "well_subtype"     # a field already resolved earlier in processing pipeline
         table: well_subtypes           # reference table name (us_counties | us_states | uic_authority)
-        key_field: "well_subtype"           # column in the table to match against
+        key_fields: "well_subtype"           # column in the table to match against
         return_field: "well_subtype_desc"  # column in the table to return
       notes: "Well subtype descriptions are derived from this source, so source and EPA descriptions will match exactly."
 
@@ -158,9 +158,9 @@ sheets:
     epa_region:
       mode: lookup
       lookup:
-        column: "state_alpha"     # a field already resolved earlier in processing pipeline
+        columns: "state_alpha"     # a field already resolved earlier in processing pipeline
         table: uic_authority           # reference table name (us_counties | us_states | uic_authority)
-        key_field: "state_alpha"           # column in the table to match against
+        key_fields: "state_alpha"           # column in the table to match against
         return_field: "epa_region"  # column in the table to return
 
     county_name:
@@ -170,9 +170,9 @@ sheets:
     geoid:
       mode: lookup
       lookup:
-        column: "county_name"     # a field already resolved earlier in processing pipeline
-        table: us_counties           # reference table name
-        key_field: "county_name"      # column in the table to match against
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
         return_field: "geoid"     # column in the table to return         
     
     well_id:
@@ -190,9 +190,9 @@ sheets:
     well_subtype_raw:
       mode: lookup
       lookup:
-        column: "well_subtype"     # a field already resolved earlier in processing pipeline
+        columns: "well_subtype"     # a field already resolved earlier in processing pipeline
         table: well_subtypes           # reference table name (us_counties | us_states | uic_authority)
-        key_field: "well_subtype"           # column in the table to match against
+        key_fields: "well_subtype"           # column in the table to match against
         return_field: "well_subtype_desc"  # column in the table to return
       notes: "Well subtype descriptions are derived from this source, so source and EPA descriptions will match exactly."
 

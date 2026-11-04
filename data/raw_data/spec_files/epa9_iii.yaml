@@ -47,9 +47,9 @@ sheets:
     geoid:
       mode: lookup
       lookup:
-        column: "county_name"     # a field already resolved earlier in processing pipeline
-        table: us_counties           # reference table name
-        key_field: "county_name"      # column in the table to match against
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
         return_field: "geoid"     # column in the table to return        
     
     well_id:

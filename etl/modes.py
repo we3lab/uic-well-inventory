@@ -159,32 +159,43 @@ MODE_DISPATCH["crosswalk"] = mode_crosswalk
 ###   us_states     →  conus_state_boundaries.geojson
 ###   uic_authority →  uic_authority.xlsx
 ##############################################################
-def mode_lookup(field_name, spec, df, resolved, refs):
+def mode_lookup(field_name, spec, _df, resolved, refs):
     lookup_spec  = spec["lookup"]
-    resolved_col = lookup_spec["column"]
     table_name   = lookup_spec["table"]
-    key_field    = lookup_spec["key_field"]
     return_field = lookup_spec["return_field"]
 
-    if resolved is None or resolved_col not in resolved:
-        raise KeyError(f"{field_name}: resolved field {resolved_col!r} not found — ensure it is processed before this field")
+    # columns/key_fields accept a string (single key) or list (compound key)
+    resolved_cols = lookup_spec["columns"]
+    key_fields    = lookup_spec["key_fields"]
+    if isinstance(resolved_cols, str):
+        resolved_cols = [resolved_cols]
+    if isinstance(key_fields, str):
+        key_fields = [key_fields]
+
+    for rc in resolved_cols:
+        if resolved is None or rc not in resolved:
+            raise KeyError(f"{field_name}: resolved field {rc!r} not found — ensure it is processed before this field")
 
     if refs is None or table_name not in refs:
         raise KeyError(f"{field_name}: reference table {table_name!r} not found in refs")
 
-    ref_table = refs[table_name].copy() # make a copy to avoid modifying the original reference table
+    ref_table = refs[table_name].copy()
 
-    if key_field not in ref_table.columns:
-        raise KeyError(f"{field_name}: key_field {key_field!r} not found in reference table {table_name!r}")
+    for kf in key_fields:
+        if kf not in ref_table.columns:
+            raise KeyError(f"{field_name}: key_field {kf!r} not found in reference table {table_name!r}")
 
     if return_field not in ref_table.columns:
         raise KeyError(f"{field_name}: return_field {return_field!r} not found in reference table {table_name!r}")
 
-    # build a lookup map from the reference table that maps the resolved column values to the return values
-    # make sure the datatypes of the key field match the datatypes of the resolved column
-    lookup_map = dict(zip(ref_table[key_field].astype(str), ref_table[return_field]))
-    
-    return resolved[resolved_col].astype(str).map(lookup_map)
+    if len(key_fields) == 1:
+        lookup_map = dict(zip(ref_table[key_fields[0]].astype(str), ref_table[return_field]))
+        return resolved[resolved_cols[0]].astype(str).map(lookup_map)
+    else:
+        ref_key = list(zip(*[ref_table[kf].astype(str) for kf in key_fields]))
+        lookup_map = dict(zip(ref_key, ref_table[return_field]))
+        source_key = list(zip(*[resolved[rc].astype(str) for rc in resolved_cols]))
+        return pd.Series([lookup_map.get(k, np.nan) for k in source_key], index=resolved[resolved_cols[0]].index)
 
 MODE_DISPATCH["lookup"] = mode_lookup
 
