@@ -131,16 +131,16 @@ def mode_crosswalk(field_name, spec, df, _resolved, _refs):
     if col_name not in df.columns: # raise warning if column not found
         raise KeyError(f"{field_name}: column {col_name!r} not found in source data")
     
-    # raise error if any source values were not mapped
-    in_map = df[col_name].isin(mapping.keys())
+    # normalize source values and map keys to uppercase, stripped of whitespace
+    normalized_mapping = {str(k).strip().upper(): v for k, v in mapping.items()}
+    normalized_source = df[col_name].astype(str).str.strip().str.upper()
+
+    # raise error if any non-null source values were not mapped (check after normalization)
+    in_map = normalized_source.isin(normalized_mapping.keys())
     unmapped = df[col_name].notna() & ~in_map
     if unmapped.any():
         unmapped_values = df.loc[unmapped, col_name].unique()
         raise ValueError(f"{field_name}: unmapped source values found: {unmapped_values}")
-    
-    # normalize source values and map keys to uppercase, stripped of whitespace
-    normalized_mapping = {str(k).strip().upper(): v for k, v in mapping.items()}
-    normalized_source = df[col_name].astype(str).str.strip().str.upper()
 
     # map values to outputs and fill unmapped values with NaN
     mapped_result = normalized_source.map(normalized_mapping)
