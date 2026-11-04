@@ -173,7 +173,7 @@ def build_inventory(file_stems=None):
     # concatenate all processed DataFrames into a single DataFrame
     print("Stacking all processed DataFrames into a single DataFrame...", end="\r")
     master_df = pd.concat(processed_dfs, ignore_index=True)
-    print("Finished stacking all processed DataFrames.")
+    print("Finished stacking all processed DataFrames.                           ")
 
     # add derived fields
     print("Adding derived fields...", end="\r")
@@ -188,7 +188,7 @@ def build_inventory(file_stems=None):
     # write final output to parquet
     print("Writing final output to parquet...", end="\r")
     write_output(master_df)
-    print("Finished writing final output to parquet.")
+    print("Finished writing final output to parquet.   ")
 
     # print summary of final output
     print("\n\nComplete.")
