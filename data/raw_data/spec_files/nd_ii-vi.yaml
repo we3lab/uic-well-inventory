@@ -1,0 +1,207 @@
+#######################################################################################
+# nd_ii-vi
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "Sheet1":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:V"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates: # only applicable to coordinates field name
+      mode: reproject
+      reproject:
+        x_columns: "longitude,N,19,11"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "latitude,N,19,11"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dd" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: none
+      notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."     
+    
+    state_alpha:
+      mode: constant
+      constant: "ND"        
+    
+    epa_region:
+      mode: constant
+      constant: 8        
+    
+    county_name:
+      mode: column
+      column: "County,C,50"       
+    
+    geoid:
+      mode: lookup
+      lookup:
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
+        return_field: "geoid"  # column in the table to return
+    
+    well_id:
+      mode: column
+      column: "api_no,C,25"
+
+    well_id_desc:
+      mode: constant
+      constant: "API Number"   
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "well_type,C,24"
+        map:
+          "OG": "0X"
+          "WI": "2R"
+          "SWD": "2D"
+          "WS": "0X"
+          "GASD": "0X"
+          "GASN": "0X"
+          "AI": "2R"
+          "GASC": "0X"
+          "Confidential": null
+          "GI": "2R"
+          "DF": "2R"
+          "ST": "0X"
+          "GS": "2H"
+          "CO2I": "2R"
+          "INJP": "2X"
+          "DFP": "2R"
+          "CBM": "0X"
+          "AGD": "2D"
+          "CO2S": "6X"
+          "SFI": "2X"
+          "MWUI": "0X"
+          "NJ": null
+      notes: "Mapped based on ND Oil and Gas Well Type Definitions (https://www.dmr.nd.gov/oilgas/codehelp.asp)"
+
+    well_subtype_raw:
+      mode: crosswalk
+      crosswalk:
+        column: "well_type,C,24"
+        map:
+          "OG": "Oil & Gas"
+          "WI": "Water Injection"
+          "SWD": "Salt Water Disposal"
+          "WS": "Water Source"
+          "GASD": "Dry Gas"
+          "GASN": "Nitrogen Gas Well"
+          "AI": "Air Injection"
+          "GASC": "Gas Condensate"
+          "Confidential": null
+          "GI": "Gas Injection"
+          "DF": "Dump Flood Injector"
+          "ST": "Stratigraphic Test"
+          "GS": "Gas Storage"
+          "CO2I": "CO2 Injection"
+          "INJP": "Injector, Producer"
+          "DFP": "Dump Flood Injector/Producer"
+          "CBM": "Coal Bed Methane"
+          "AGD": "Acid Gas Disposal"
+          "CO2S": "CO2 Storage"
+          "SFI": "Slurry Fracture Injection"
+          "MWUI": "Monitoring - UIC"
+          "NJ": "Non-Jurisdictional"
+      notes: "Mapped based on ND Oil and Gas Well Type Definitions (https://www.dmr.nd.gov/oilgas/codehelp.asp)"
+    
+    well_class:
+      mode: lookup
+      lookup:
+        columns: "well_subtype"     # a field (or list of fields) already resolved earlier in processing pipeline
+        table: well_subtypes           # reference table name (us_counties | us_states | uic_authority)
+        key_fields: "well_subtype"           # column(s) in the table to match against
+        return_field: "well_class"  # column in the table to return
+    
+    well_depth_ft:
+      mode: column
+      column: "td,N,10,0"
+
+    well_depth_ft_desc:
+      mode: constant
+      constant: "MD"
+      notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
+    
+    operator:
+      mode: column
+      column: "operator,C,100"
+
+    operator_desc:
+      mode: constant
+      constant: "Company"
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "status,C,24"
+        map:
+          "DRY": "Inactive"
+          "PA": "Inactive"
+          "PNC": "Other"
+          "A": "Active"
+          "IA": "Inactive"
+          "TA": "Inactive"
+          "AB": "Inactive"
+          "LOCR": "Other"
+          "TAO": "Inactive"
+          "Confidential": "Other"
+          "PANF": "Inactive"
+          "EXP": "Other"
+          "LOC": "Other"
+          "TATD": "Other"
+          "NC": "Other"
+          "PNS": "Other"
+          "DRL": "Other"
+          "TASC": "Other"
+          "NJ": "Other"
+      notes: "Mapped based on ND Oil and Gas Well Status Definitions (https://www.dmr.nd.gov/oilgas/codehelp.asp)"
+    
+    status_raw:
+      mode: crosswalk
+      crosswalk:
+        column: "status,C,24"
+        map:
+          "DRY": "Dry Hole"
+          "PA": "Plugged and Abandoned"
+          "PNC": "Permit Now Cancelled"
+          "A": "Active"
+          "IA": "Inactive (Shut-In >= 3 and <= 12 Months)"
+          "TA": "Temporarily Abandoned"
+          "AB": "Abandoned (Shut-In > 12 Months)"
+          "LOCR": "Permitted Reentry of Plugged"
+          "TAO": "Temporarily Abandoned - Observation"
+          "Confidential": null
+          "PANF": "PA not Finished"
+          "EXP": "Expired Permit"
+          "LOC": "Permitted Location to Drill"
+          "TATD": "Temp Abandoned, Drilled to Total Depth"
+          "NC": "Not Completed (Drilled to TD, Awaiting Completion)"
+          "PNS": "Permit Now Suspended"
+          "DRL": "Drilling"
+          "TASC": "Temp Abandoned, SoD (Surface Casing Set)"
+          "NJ": "Non-Jurisdictional"
+      notes: "Mapped based on ND Oil and Gas Well Status Definitions (https://www.dmr.nd.gov/oilgas/codehelp.asp)"
+    
+    date:
+      mode: column
+      column: "spud_date,D"
+
+    date_desc:
+      mode: constant
+      constant: "Spud Date"
+
+   
+      
