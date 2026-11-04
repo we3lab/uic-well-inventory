@@ -43,14 +43,13 @@ def postprocess_coordinates(coords_df, _resolved, refs):
     # make sure sign of longitude is negative
     coords_df['longitude'] = coords_df['longitude'].apply(lambda x: -abs(x))
 
-    # if coordinates are significantly outside the bounding box of the US, set to NaN and flag
+    # if coordinates are significantly outside the boundaries of the US, set to NaN and flag
+    oob_buffer_deg = 2.0 # degrees of buffer around CONUS borders in all directions (1 degre = ~100 km)
     county_df = refs['us_counties']
-    minx, miny, maxx, maxy = county_df.total_bounds
-    box_buffer = 5.0 # degrees of buffer around bounding box in all directions
-    out_of_bounds = (
-        (coords_df['latitude']  < miny - box_buffer) | (coords_df['latitude']  > maxy + box_buffer) |
-        (coords_df['longitude'] < minx - box_buffer) | (coords_df['longitude'] > maxx + box_buffer)
-    )
+    conus_buffer = county_df.union_all().buffer(oob_buffer_deg)
+    points = gpd.GeoSeries(gpd.points_from_xy(coords_df['longitude'], coords_df['latitude']), crs=TARGET_CRS)
+    has_coords = coords_df['latitude'].notna() & coords_df['longitude'].notna()
+    out_of_bounds = has_coords & ~points.within(conus_buffer)
     coords_df.loc[out_of_bounds, ['latitude', 'longitude']] = np.nan
     coords_df.loc[out_of_bounds, 'location_flag'] = 'OOB'
 
