@@ -111,9 +111,9 @@ FIELD_NAME:
 FIELD_NAME:
   mode: lookup
   lookup:
-    column: "RESOLVED_FIELD"     # a field already resolved earlier in processing pipeline
+    columns: "RESOLVED_FIELD"     # a field (or list of fields) already resolved earlier in processing pipeline
     table: table_name           # reference table name (us_counties | us_states | uic_authority)
-    key_field: "KEY_FIELD"           # column in the table to match against
+    key_fields: "KEY_FIELD"           # column(s) in the table to match against
     return_field: "RETURN_FIELD"  # column in the table to return
 
 ##############################################################
