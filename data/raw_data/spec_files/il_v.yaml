@@ -172,8 +172,8 @@ sheets:
     
     date_desc:
       mode: constant
-      constant: "Permit Date"
-      notes: "Assuming that the first entry date is the permit date, as no other date information is provided in the source data."
+      constant: "Application Date"
+      notes: "Assuming that the first entry date is the application date, as no other date information is provided in the source data."
     
 
    
