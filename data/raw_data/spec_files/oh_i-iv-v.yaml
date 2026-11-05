@@ -1,0 +1,131 @@
+#######################################################################################
+# oh_i-iv-v
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "5.13.2025":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:L"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates: # only applicable to coordinates field name
+      mode: reproject
+      reproject:
+        x_columns: "Longitude"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "Latitude"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dd" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: none
+      # notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."     
+    
+    state_alpha:
+      mode: constant
+      constant: "OH"        
+    
+    epa_region:
+      mode: constant
+      constant: 5        
+    
+    county_name:
+      mode: column
+      column: "County"        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
+        return_field: "geoid"  # column in the table to return
+    
+    well_id:
+      mode: none        
+    
+    well_id_desc:
+      mode: none        
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "Type of Well"
+        map:
+          "Hazardous Waste": "1H"
+          "Non-Hazardosu Industrial": "1I"
+          "Non-Hazardous Waste": "1X"
+          "Remediation Wells": "4A"
+          "Cooling Water Return": "5A"
+          "Drinking Water Treatment Residual": "5A23"
+          "HeatPump Return Wells": "5C2"
+          "Kennels/Vets": "5A15"
+          "Large Capacity Cesspool": "5E"
+          "Large Capacity Septic System": "5F"
+          "Mine Backfill Wells": "5I"
+          "Motor Vehicle Waste Disposal Well": "5K"
+          "Non-Hazardous Industrial": "5A"
+          "Stormwater Drainage Wells": "5H1"
+
+    well_subtype_raw:
+      mode: column
+      column: "Type of Well"
+    
+    well_class:
+      mode: extract
+      extract:
+        column: "Well Classification"
+        method: slice
+        slice:
+          start: 6
+          end: -1
+    
+    well_depth_ft:
+      mode: none
+    
+    well_depth_ft_desc:
+      mode: none
+    
+    operator:
+      mode: column
+      column: "Facility Name"
+    
+    operator_desc:
+      mode: constant
+      constant: "Site Name"
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Operating Status"
+        map:
+          "Active": "Active"
+          "Plugged and Abandoned": "Inactive"
+          "Proposed Well": "Other"
+          "Under Construction": "Other"
+          "Temporarily Abandoned": "Inactive"
+    
+    status_raw:
+      mode: column
+      column: "Operating Status"
+    
+    date:
+      mode: none
+    
+    date_desc:
+      mode: none
+    
+
+   
+      
