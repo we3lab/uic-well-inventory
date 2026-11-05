@@ -1,0 +1,107 @@
+#######################################################################################
+# ks_iii
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "All Class III Wells":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:G"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates:
+      mode: reproject
+      reproject:
+        x_columns: "WELL_LONG"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "WELL_LAT"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dd" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: none
+      notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."     
+    
+    state_alpha:
+      mode: constant
+      constant: "KS"        
+    
+    epa_region:
+      mode: constant
+      constant: 7        
+    
+    county_name:
+      mode: locate
+      notes: "County name is not provided in the source data. Will be determined based on coordinates."        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
+        return_field: "geoid"  # column in the table to return
+    
+    well_id:
+      mode: column
+      column: "PERMIT NUMBER"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "Permit Number"        
+    
+    well_subtype:
+      mode: none
+
+    well_subtype_raw:
+      mode: none
+    
+    well_class:
+      mode: constant
+      constant: "III"
+    
+    well_depth_ft:
+      mode: none
+    
+    well_depth_ft_desc:
+      mode: none
+    
+    operator:
+      mode: extract
+      extract:
+        column: "OWNER_COMPANY"
+        method: regex
+        regex:
+          pattern: '^(CARGILL(?:\s+SALT)?|COMPASS MINERALS(?:\s+AMERICA)?\s+INC\.|IMC\s+\(CAREY\)|MORTON SALT(?:,?\s*INC\.)?|OXY CHEMICALS|Occidental Chemical Corporation)'
+          group: 1
+      notes: "Given variability in how the operator name is recorded operator names are extracted from the OWNER_COMPANY field using a regex pattern that captures the known operators."
+    
+    operator_desc:
+      mode: constant
+      constant: "Company"
+    
+    status:
+      mode: none
+    
+    status_raw:
+      mode: none
+    
+    date:
+      mode: none
+    
+    date_desc:
+      mode: none
+    
+
+   
+      
