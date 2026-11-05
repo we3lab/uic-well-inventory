@@ -1,0 +1,157 @@
+#######################################################################################
+# al_iii-v
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: "https://aepacs.adem.alabama.gov/nviro/nsite/DEFAULT/map/export"    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: "Filtered for UIC Permit Program."    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "Environmental Interests":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:R"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates:
+      mode: geocode
+      geocode:
+        method: address
+        address_fields: # indicate which address fields are present in the source data and how to extract them using existing modes
+          street:
+            mode: column
+            column: "Addr Line 1"
+          city:
+            mode: column
+            column: "Address City"
+          state:
+            mode: constant
+            constant: "AL"
+          zip:
+            mode: column
+            column: "Address PostalCode"
+    
+    state_alpha:
+      mode: constant
+      constant: "AL"        
+    
+    epa_region:
+      mode: constant
+      constant: 4        
+    
+    county_name:
+      mode: locate
+      notes: "County name is not provided in the source data. Will be determined based on coordinates."        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
+        return_field: "geoid"  # column in the table to return
+    
+    well_id:
+      mode: column
+      column: "Permit Number"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "Permit Number"        
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "Type"
+        map:
+          "Groundwater Remediation": "5B6"
+          "UIC - Remediation": "5B6"
+          "Petroleum Products and Treated Groundwater": null
+          "UIC - Meat and Seafood Processors": "5A20"
+          "Experimental Technologies": "5G"
+          "Waste Water Treatment Plant": "5D"
+          "Industrial Wells - General": "5A"
+          "Coal Mining and Associated Areas": null
+          "0": null
+          "Metals": null
+          "No Exposure Certification": null
+          "Other Treatment Works Treating Domestic Sewage (TWTDS)": null
+          "Air Conditioner Return": "5C2"
+          "Standard": null
+          "Coal Washer Slurry Injection": "5I"
+          "Stormwater Drainage": "5H1"
+          "Publicly Owned Treatment Works (POTW)": null
+          "Salt Solution Mining": "3A"
+          "Coal Preparation Plant and Associated Areas": null
+          "Categorical": null
+          "Food and Related Substances": null
+          "Stone, Glass and Clay": null
+          "Significant": null
+          "Transportation": null
+          "Storm Water Only": null
+          "Drainage-Other": "5H3"
+          "Mineral Ore Mining and Associated Areas": null
+          "MS4 Phase II General Permit": null
+          
+
+    well_subtype_raw:
+      mode: column
+      column: "Type"
+    
+    well_class:
+      mode: lookup
+      lookup:
+        columns: "well_subtype"     # a field (or list of fields) already resolved earlier in processing pipeline
+        table: well_subtypes           # reference table name (us_counties | us_states | uic_authority)
+        key_fields: "well_subtype"           # column(s) in the table to match against
+        return_field: "well_class"  # column in the table to return
+    
+    well_depth_ft:
+      mode: none
+    
+    well_depth_ft_desc:
+      mode: none
+    
+    operator:
+      mode: column
+      column: "Permittee"
+    
+    operator_desc:
+      mode: constant
+      constant: "Permittee"
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Status"
+        map:
+          "Terminated": "Other"
+          "Expired": "Other"
+          "In Effect": "Active"
+          "Extended": "Active"
+          "Issued (Not In Effect)": "Other"
+    
+    status_raw:
+      mode: column
+      column: "Status"
+    
+    date:
+      mode: column
+      column: "Effective Date"
+    
+    date_desc:
+      mode: constant
+      constant: "Permit Date"
+    
+
+   
+      

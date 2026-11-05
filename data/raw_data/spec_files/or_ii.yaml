@@ -1,0 +1,116 @@
+#######################################################################################
+# or_ii
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "Sheet1":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:Q"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates:
+      mode: reproject
+      reproject:
+        x_columns: "Longitude"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "Latitude"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dd" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: none
+      notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."     
+    
+    state_alpha:
+      mode: constant
+      constant: "OR"        
+    
+    epa_region:
+      mode: constant
+      constant: 10        
+    
+    county_name:
+      mode: column
+      column: "County"        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
+        return_field: "geoid"  # column in the table to return
+    
+    well_id:
+      mode: column
+      column: "PermitID"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "Permit Number"        
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "WellType"
+        map:
+          "Water Disposal": "2D"
+    
+    well_subtype_raw:
+      mode: column
+      column: "WellType"
+    
+    well_class:
+      mode: constant
+      constant: "II"
+    
+    well_depth_ft:
+      mode: column
+      column: "Depth (ft)"
+    
+    well_depth_ft_desc:
+      mode: constant
+      constant: "UK"
+    
+    operator:
+      mode: column
+      column: "Permittee"
+    
+    operator_desc:
+      mode: constant
+      constant: "Permitee"
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "Well Status"
+        map:
+          "Idle": "Inactive"
+          "Active": "Active"
+    
+    status_raw:
+      mode: column
+      column: "Well Status"
+    
+    date:
+      mode: column
+      column: "ApplicationDate"
+    
+    date_desc:
+      mode: constant
+      constant: "Application Date"
+    
+
+   
+      
