@@ -126,7 +126,7 @@ FIELD_NAME:
   mode: compute
   compute:
     columns: ["SOURCE_COLUMN_1", "SOURCE_COLUMN_2"]   # list of numeric source columns to compute over
-    operation: mean # aggregate function: mean | median | sum | min | max
+    operation: mean # aggregate function: coalesce |mean | median | sum | min | max
   # notes: "" 
 
 ##############################################################

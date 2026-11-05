@@ -213,12 +213,15 @@ def mode_compute(field_name, spec, df, _resolved, _refs):
     if missing_cols:
         raise KeyError(f"{field_name}: columns {missing_cols} not found in source data")
     
-    # make sure all specified columns are numeric
+    # coalesce returns the first non-null value across columns (works for any dtype)
+    if operation == "coalesce":
+        return df[col_names].bfill(axis=1).iloc[:, 0]
+
+    # all other operations require numeric data
     numeric_data = df[col_names].apply(pd.to_numeric, errors='coerce')
-    if numeric_data.isnull().all(axis=0).any(): # if any full column is null, assume non-numeric
+    if numeric_data.isnull().all(axis=0).any():
         raise ValueError(f"{field_name}: one or more specified columns contain all non-numeric values")
 
-    # ensure that the specified method is one of the supported operations
     ops = {
         "mean"  : numeric_data.mean(axis=1),
         "median": numeric_data.median(axis=1),
