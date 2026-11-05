@@ -1,0 +1,124 @@
+#######################################################################################
+# tx_ii
+#######################################################################################
+
+##############################################################
+### DATA SOURCE
+##############################################################
+provenance:
+  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: ""    # any notes on the file itself (processing steps, etc.)
+
+##############################################################
+### SPECS
+##############################################################
+sheets:
+
+  "RRC-UIC_well_location_20260804":
+
+    load_specs:
+      header_row: 0       # 0-indexed row number of the header row in the source sheet
+      data_cols: "A:AA"     # passed to usecols in pd.read_excel() to select the columns to read in (e.g. "A:Z" or "A,B,C,D,E" or [0,1,2,3,4])
+    
+    coordinates:
+      mode: reproject
+      reproject:
+        x_columns: "LONGITUDE_NAD83"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "LATITUDE_NAD83"  # source column(s) for y-coordinate values (latitude)
+        input_format: "dd" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
+        datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
+          mode: constant
+          constant: "EPSG:4269"  
+    
+    state_alpha:
+      mode: constant
+      constant: "TX"        
+    
+    epa_region:
+      mode: constant
+      constant: 6        
+    
+    county_name:
+      mode: locate
+      notes: "County name is not provided in the source data. Will attempt to locate county based on coordinates."        
+    
+    geoid:
+      mode: lookup
+      lookup:
+        columns: ["state_alpha", "county_name"]
+        table: us_counties
+        key_fields: ["state_alpha", "county_name"]
+        return_field: "geoid"  # column in the table to return
+    
+    well_id:
+      mode: column
+      column: "API_NO"        
+    
+    well_id_desc:
+      mode: constant
+      constant: "API Number"        
+    
+    well_subtype:
+      mode: crosswalk
+      crosswalk:
+        column: "UIC_TYPE_INJECTION"
+        map:
+          1 : "2D"
+          2 : "2R"
+          3 : "2R"
+          4 : "2R"
+          5 : "2R"
+          6 : "2R"
+          7 : "2R"
+          8 : "2R"
+      notes: "Mapping determined based on association of each value with either a W-14 Form (disposal) or H-1 Form (recovery)."
+
+    well_subtype_raw:
+      mode: column
+      column: "UIC_TYPE_INJECTION"
+    
+    well_class:
+      mode: constant
+      constant: "II"
+    
+    well_depth_ft:
+      mode: column
+      column: "TOP_INJ_ZONE"
+    
+    well_depth_ft_desc:
+      mode: constant
+      constant: "TIZ"
+    
+    operator:
+      mode: none
+    
+    operator_desc:
+      mode: none
+    
+    status:
+      mode: crosswalk
+      crosswalk:
+        column: "ACTIVATED_FLAG"
+        map:
+          TRUE : "Active"
+          FALSE : "Inactive"
+
+    status_raw:
+      mode: column
+      column: "ACTIVATED_FLAG"
+
+    date:
+      mode: compute
+      compute:
+        columns: ["W14_DATE", "H1_DATE"]
+        operation: coalesce
+      notes: "W14_DATE applies to Type 1 (disposal); H1_DATE applies to Types 2–8. Columns are mutually exclusive, so max returns whichever is present."
+
+    date_desc:
+      mode: constant
+      constant: "Permit Date"
+
+   
+      
