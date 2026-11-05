@@ -412,7 +412,7 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
                     centroid = gpd.GeoSeries([union_pt], crs='EPSG:3857').to_crs(TARGET_CRS).iloc[0]
                     return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'location_flag': "RCTR"})
                 else:
-                    return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'location_flag': "No PLSS Match Found"})
+                    return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'location_flag': "NOMTCH"})
 
         # compute coordinates once per unique PLSS ID, then join back to avoid redundant lookups
         unique_ids = plss_df['plss_id'].dropna().drop_duplicates()
@@ -450,9 +450,9 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
                 return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'location_flag': np.nan})
             location = geocode(address)
             if location:
-                return pd.Series({'latitude': location.latitude, 'longitude': location.longitude, 'location_flag': 'Geocoded (Address)'})
+                return pd.Series({'latitude': location.latitude, 'longitude': location.longitude, 'location_flag': 'ADDR'})
             else:
-                return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'location_flag': 'No Address Match Found'})
+                return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'location_flag': 'NOMTCH'})
 
         unique_addrs = addr_df['full_address'].drop_duplicates()
         addr_centroids = unique_addrs.apply(_geocode_address)
