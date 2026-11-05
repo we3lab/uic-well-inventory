@@ -131,9 +131,14 @@ def process_sheet(df, sheet_specs, source_file, source_sheet, refs):
             raise RuntimeError(f"Error processing field '{field_name}' with mode '{mode}': {e}") from e
         
         if field_name == "coordinates":
-            resolved["latitude"] = mode_output["latitude"]
-            resolved["longitude"] = mode_output["longitude"]
-            resolved["location_flag"] = mode_output["location_flag"]
+            if mode == "none":
+                resolved["latitude"]     = mode_output  # all-NaN Series
+                resolved["longitude"]    = mode_output
+                resolved["location_flag"] = mode_output
+            else:
+                resolved["latitude"] = mode_output["latitude"]
+                resolved["longitude"] = mode_output["longitude"]
+                resolved["location_flag"] = mode_output["location_flag"]
         else:
             resolved[field_name] = mode_output
 

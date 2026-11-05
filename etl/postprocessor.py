@@ -43,16 +43,6 @@ def postprocess_coordinates(coords_df, _resolved, refs):
     # make sure sign of longitude is negative
     coords_df['longitude'] = coords_df['longitude'].apply(lambda x: -abs(x))
 
-    # if coordinates are significantly outside the boundaries of the US, set to NaN and flag
-    oob_buffer_deg = 2.0 # degrees of buffer around CONUS borders in all directions (1 degre = ~100 km)
-    county_df = refs['us_counties']
-    conus_buffer = county_df.union_all().buffer(oob_buffer_deg)
-    points = gpd.GeoSeries(gpd.points_from_xy(coords_df['longitude'], coords_df['latitude']), crs=TARGET_CRS)
-    has_coords = coords_df['latitude'].notna() & coords_df['longitude'].notna()
-    out_of_bounds = has_coords & ~points.within(conus_buffer)
-    coords_df.loc[out_of_bounds, ['latitude', 'longitude']] = np.nan
-    coords_df.loc[out_of_bounds, 'location_flag'] = 'OOB'
-
     return coords_df
 
 FIELD_POSTPROCESSORS_DISPATCH['coordinates'] = postprocess_coordinates
@@ -170,12 +160,34 @@ FIELD_POSTPROCESSORS_DISPATCH['date'] = postprocess_date
 
 def postprocess_sheet(df, refs):
 
-    # if coordinates are NaN but county is provided, return county centroid coordinates and flag
-    missing_coords = df['latitude'].isna() & df['longitude'].isna() & df['geoid'].notna()
-    county_df = refs['us_counties']
+    ###### COORDINATES ######
+    # if coordinates are significantly outside the boundaries of the specified state, set to NaN and flag
+    st_oob_buffer_deg = 0.5 # degrees of buffer around state borders in all directions (1 degre = ~100 km)
+    us_states = refs['us_states'].copy()
+    for st in df['state_alpha'].dropna().unique():
+        st_coords_df = df[df['state_alpha'] == st]
+        state_buffer = us_states[us_states['state_alpha'] == st].iloc[0].geometry.buffer(st_oob_buffer_deg)
+        shoreline_bounds = us_states.union_all() # CONUS bounds
+        points = gpd.points_from_xy(st_coords_df['longitude'], st_coords_df['latitude'])
+        has_coords = st_coords_df['latitude'].notna() & st_coords_df['longitude'].notna()
+        out_of_state_bounds = has_coords & ~points.within(state_buffer) & points.within(shoreline_bounds) # out of state bounds and not offshore
+        df.loc[out_of_state_bounds, ['latitude', 'longitude']] = np.nan
+        df.loc[out_of_state_bounds, 'location_flag'] = 'OOSB'
+    
+    # if coordinates are significantly outside the boundaries of the US, set to NaN and flag
+    us_oob_buffer_deg = 2.0 # degrees of buffer around CONUS borders in all directions (1 degre = ~100 km)
+    us_counties = refs['us_counties'].copy()
+    conus_buffer = us_counties.union_all().buffer(us_oob_buffer_deg)
+    points = gpd.GeoSeries(gpd.points_from_xy(df['longitude'], df['latitude']), crs=TARGET_CRS)
+    has_coords = df['latitude'].notna() & df['longitude'].notna()
+    out_of_bounds = has_coords & ~points.within(conus_buffer)
+    df.loc[out_of_bounds, ['latitude', 'longitude']] = np.nan
+    df.loc[out_of_bounds, 'location_flag'] = 'OOB'
 
+    # if coordinates are still NaN but county is provided, return county centroid coordinates and flag
+    missing_coords = df['latitude'].isna() & df['longitude'].isna() & df['geoid'].notna()
     if missing_coords.any():
-        geoid_to_centroid = county_df.to_crs('EPSG:3857').set_index('geoid').geometry.centroid.to_crs(TARGET_CRS) # convert to projected CRS for centroid calculation, then back to target CRS
+        geoid_to_centroid = us_counties.to_crs('EPSG:3857').set_index('geoid').geometry.centroid.to_crs(TARGET_CRS) # convert to projected CRS for centroid calculation, then back to target CRS
         missing_geoids = df.loc[missing_coords, 'geoid']
         centroids = missing_geoids.map(geoid_to_centroid)
         df.loc[missing_coords, 'latitude']   = centroids.apply(lambda p: p.y if pd.notna(p) else np.nan).values
