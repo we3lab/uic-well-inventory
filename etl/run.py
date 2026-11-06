@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import processor, reference_tables
+from . import processor, reference_tables, validate
 from .utils import *
 
 ##############################################################
@@ -106,13 +106,16 @@ def reorder_columns(df):
 
 ##############################################################
 
-def write_output(df):
+def write_output(df, validation_df):
     """
     Writes the processed DataFrame to a parquet file in the processed_data/ directory.
+    Writes the validation log to a csv in the processed_data/ directory.
 
     Arguments:
         df : pd.DataFrame
             The DataFrame to write to parquet.
+        validation_df : pd.DataFrame
+            The DataFrame containing validation log to write to csv.
     """
     # create output directory if it doesn't exist
     if not output_dir.exists():
@@ -121,6 +124,10 @@ def write_output(df):
     # write to parquet
     output_path = output_dir / "uic_well_inventory.parquet"
     df.to_parquet(output_path, index=False)
+
+    # write validation log to csv
+    output_path = output_dir / "uic_well_inventory_validation.csv"
+    validation_df.to_csv(output_path, index=False)
 
 ##############################################################
     
@@ -185,9 +192,14 @@ def build_inventory(file_stems=None):
     master_df = reorder_columns(master_df)
     print("Finished reordering columns.")
 
+    # conduct validation checks on combined dataset
+    print("Conducting validation checks...", end="\r")
+    validation_df = validate.run_all(master_df, refs)
+    print("Finished conducting validation checks.")
+
     # write final output to parquet
     print("Writing final output to parquet...", end="\r")
-    write_output(master_df)
+    write_output(master_df, validation_df)
     print("Finished writing final output to parquet.   ")
 
     # print summary of final output

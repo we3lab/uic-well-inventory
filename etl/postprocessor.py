@@ -50,10 +50,8 @@ FIELD_POSTPROCESSORS_DISPATCH['coordinates'] = postprocess_coordinates
 ##############################################################
 
 def postprocess_epa_region(series, _resolved, _refs):
-    # cast to int and set invalid values to NaN
-    series = series.astype(float)
-    series = series.apply(lambda x: int(x) if x in range(1, 11) else np.nan)
-    return series
+    valid = {f"Region {i}" for i in range(1, 11)}
+    return series.apply(lambda x: x if x in valid else np.nan)
 
 FIELD_POSTPROCESSORS_DISPATCH['epa_region'] = postprocess_epa_region
 
@@ -126,20 +124,12 @@ FIELD_POSTPROCESSORS_DISPATCH['geoid'] = postprocess_geoid
 ##############################################################
 
 def postprocess_well_class(series, _resolved, _refs):
-    # make sure all values are in format of roman numerals and valid
-    arabic_to_roman = {
-        "1": "I",
-        "2": "II",
-        "3": "III",
-        "4": "IV",
-        "5": "V",
-        "6": "VI",
-    }   
+    # make sure all values are in format of roman numerals and valid 
     def _normalize_well_class(value):
         if pd.isna(value):
             return np.nan
         value = str(value).strip()
-        return arabic_to_roman.get(value, value.upper())
+        return ARABIC_TO_ROMAN.get(value, value.upper())
 
     return series.apply(_normalize_well_class)
 
@@ -160,19 +150,27 @@ FIELD_POSTPROCESSORS_DISPATCH['date'] = postprocess_date
 
 def postprocess_sheet(df, refs):
 
+    ###### NON-UIC WELLS ######
+    # drop any rows where well_subtype is 0X - definitively not a UIC well
+    df = df[df['well_subtype'] != '0X'].copy()
+
     ###### COORDINATES ######
     # if coordinates are significantly outside the boundaries of the specified state, set to NaN and flag
-    st_oob_buffer_deg = 0.5 # degrees of buffer around state borders in all directions (1 degre = ~100 km)
+    st_oob_buffer_deg = 0.5
     us_states = refs['us_states'].copy()
+    shoreline_bounds = us_states.union_all()
     for st in df['state_alpha'].dropna().unique():
-        st_coords_df = df[df['state_alpha'] == st]
+        valid_mask = (df['state_alpha'] == st) & df['latitude'].notna() & df['longitude'].notna()
+        if not valid_mask.any():
+            continue
         state_buffer = us_states[us_states['state_alpha'] == st].iloc[0].geometry.buffer(st_oob_buffer_deg)
-        shoreline_bounds = us_states.union_all() # CONUS bounds
-        points = gpd.points_from_xy(st_coords_df['longitude'], st_coords_df['latitude'])
-        has_coords = st_coords_df['latitude'].notna() & st_coords_df['longitude'].notna()
-        out_of_state_bounds = has_coords & ~points.within(state_buffer) & points.within(shoreline_bounds) # out of state bounds and not offshore
-        df.loc[out_of_state_bounds, ['latitude', 'longitude']] = np.nan
-        df.loc[out_of_state_bounds, 'location_flag'] = 'OOSB'
+        points = gpd.GeoSeries(
+            gpd.points_from_xy(df.loc[valid_mask, 'longitude'], df.loc[valid_mask, 'latitude']),
+            crs=TARGET_CRS, index=df[valid_mask].index
+        )
+        oosb_idx = points[~points.within(state_buffer) & points.within(shoreline_bounds)].index
+        df.loc[oosb_idx, ['latitude', 'longitude']] = np.nan
+        df.loc[oosb_idx, 'location_flag'] = 'OOSB'
     
     # if coordinates are significantly outside the boundaries of the US, set to NaN and flag
     us_oob_buffer_deg = 2.0 # degrees of buffer around CONUS borders in all directions (1 degre = ~100 km)
@@ -193,5 +191,14 @@ def postprocess_sheet(df, refs):
         df.loc[missing_coords, 'latitude']   = centroids.apply(lambda p: p.y if pd.notna(p) else np.nan).values
         df.loc[missing_coords, 'longitude']  = centroids.apply(lambda p: p.x if pd.notna(p) else np.nan).values
         df.loc[missing_coords, 'location_flag'] = 'CCTR'
+    
+    ###### OVERWRITE DESC VALUE FOR NULL FIELDS ######
+    # if field value is null, make sure its _desc value is null too
+    for col in df.columns:
+        if col.endswith('_desc'):
+            base_col = col[:-5]
+            if base_col in df.columns:
+                null_mask = df[base_col].isna()
+                df.loc[null_mask, col] = np.nan
     
     return df
