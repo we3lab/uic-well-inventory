@@ -31,7 +31,7 @@ sheets:
     
     epa_region:
       mode: constant
-      constant: 5        
+      constant: "Region 5"        
     
     county_name:
       mode: crosswalk

@@ -38,7 +38,7 @@ sheets:
     
     epa_region:
       mode: constant
-      constant: 4        
+      constant: "Region 4"        
     
     county_name:
       mode: column
@@ -122,7 +122,7 @@ sheets:
     
     epa_region:
       mode: constant
-      constant: 4        
+      constant: "Region 4"        
     
     county_name:
       mode: column
@@ -206,7 +206,7 @@ sheets:
     
     epa_region:
       mode: constant
-      constant: 4        
+      constant: "Region 4"        
     
     county_name:
       mode: column

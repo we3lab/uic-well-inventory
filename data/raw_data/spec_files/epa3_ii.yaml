@@ -42,7 +42,7 @@ sheets:
     
     epa_region:
       mode: constant
-      constant: 3        
+      constant: "Region 3"        
     
     county_name:
       mode: locate

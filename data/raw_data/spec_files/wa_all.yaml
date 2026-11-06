@@ -38,7 +38,7 @@ sheets:
     
     epa_region:
       mode: constant
-      constant: 10        
+      constant: "Region 10"        
     
     county_name:
       mode: column

@@ -83,7 +83,7 @@ sheets:
     
     epa_region:
       mode: constant
-      constant: 6        
+      constant: "Region 6"        
     
     county_name:
       mode: extract
