@@ -1,0 +1,14 @@
+name: uic
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - pandas
+  - geopandas
+  - pyproj
+  - ipykernel
+  - openpyxl
+  - pyyaml
+  - proj-data
+  - geopy
+  - pyarrow
