@@ -50,8 +50,9 @@ FIELD_POSTPROCESSORS_DISPATCH['coordinates'] = postprocess_coordinates
 ##############################################################
 
 def postprocess_epa_region(series, _resolved, _refs):
-    valid = {f"Region {i}" for i in range(1, 11)}
-    return series.apply(lambda x: x if x in valid else np.nan)
+    # if any numerical values are present, convert to string with "Region " prefix
+    series = series.apply(lambda x: f"Region {int(x)}" if pd.notna(x) and str(x).isdigit() else x)
+    return series
 
 FIELD_POSTPROCESSORS_DISPATCH['epa_region'] = postprocess_epa_region
 
@@ -114,9 +115,6 @@ FIELD_POSTPROCESSORS_DISPATCH['county_name'] = postprocess_county_name
 def postprocess_geoid(series, _resolved, refs):
     # geoid is a 5-digit string, with leading zeros if necessary
     series = series.astype(str).str.zfill(5)
-    # check if geoid exists in reference table
-    valid_geoids = set(refs['us_counties']['geoid'])
-    series = series.apply(lambda x: x if x in valid_geoids else np.nan)
     return series
 
 FIELD_POSTPROCESSORS_DISPATCH['geoid'] = postprocess_geoid

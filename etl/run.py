@@ -46,11 +46,6 @@ def add_derived_fields(df, refs):
     state_alpha_to_name = dict(zip(refs["us_states"]["state_alpha"], refs["us_states"]["state_name"]))
     df["state_name"] = df["state_alpha"].map(state_alpha_to_name)
 
-    # --- county_name ------------------------------------------------------------------
-    # lookup from us_counties using geoid
-    geoid_to_county_name = dict(zip(refs["us_counties"]["geoid"], refs["us_counties"]["county_name"]))
-    df["county_name"] = df["geoid"].map(geoid_to_county_name)
-
     # --- primacy and responsible_office -----------------------------------------------
     # lookup from uic_authority using state_alpha and well_class
     uic_authority_df = refs["uic_authority"]
@@ -126,7 +121,7 @@ def write_output(df, validation_df):
     df.to_parquet(output_path, index=False)
 
     # write validation log to csv
-    output_path = output_dir / "uic_well_inventory_validation.csv"
+    output_path = output_dir / "validation_log.csv"
     validation_df.to_csv(output_path, index=False)
 
 ##############################################################
