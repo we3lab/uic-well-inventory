@@ -21,16 +21,17 @@ from .utils import *
 
 # standard schema for all validation log entries
 VALIDATION_LOG_COLUMNS = [
-    "check_category", # validity or match
-    "fields",         # list of fields involved in the check  
-    "severity",       # low, medium, high
-    "severity_desc",  # details on severity classification if applicable
-    "observed",       # the value(s) observed in the dataset
-    "expected",       # the value(s) expected based on reference data or other fields
-    "message",        # a human-readable description of the issue
-    "_source_file",   # the original source file for the row
-    "_source_sheet",  # the original source sheet for the row
-    "_source_row"    # the original source row for the row
+    "check_category",  # validity or match
+    "fields",          # list of fields involved in the check
+    "severity",        # low, medium, high
+    "severity_desc",   # details on severity classification if applicable
+    "observed",        # the value(s) observed in the dataset
+    "expected",        # the value(s) expected based on reference data or other fields
+    "message",         # a human-readable description of the issue
+    "_inventory_row",  # row index in the final master inventory DataFrame
+    "_source_file",    # the original source file for the row
+    "_source_sheet",   # the original source sheet for the row
+    "_source_row"      # the original source row for the row
 ]
 
 ##############################################################
@@ -56,7 +57,7 @@ def validity_check(df, field, valid_set):
     # isolate rows with relevant data
     relevant_fields = [field]
     has_data = df[relevant_fields].notna().all(axis=1)
-    subset = df[has_data].copy().reset_index(drop=True)
+    subset = df[has_data].copy()
 
     # if no rows have relevant data, return empty log
     if subset.empty:
@@ -64,7 +65,6 @@ def validity_check(df, field, valid_set):
 
     # flag rows where the field value is not in the valid set
     flagged = subset[~subset[field].isin(valid_set)].copy()
-
 
     return pd.DataFrame({
         "check_category" : 'validity',
@@ -74,6 +74,7 @@ def validity_check(df, field, valid_set):
         "observed"       : flagged[field].values,
         "expected"       : f'One of {valid_set}',
         "message"        : f"Field '{field}' contains values not in the valid set.",
+        "_inventory_row" : flagged.index.values,
         "_source_file"   : flagged["_source_file"].values,
         "_source_sheet"  : flagged["_source_sheet"].values,
         "_source_row"    : flagged["_source_row"].values
@@ -105,7 +106,7 @@ def match_check(df, field1, field2, ref_map):
     # isolate rows with relevant data
     relevant_fields = [field1, field2]
     has_data = df[relevant_fields].notna().all(axis=1)
-    subset = df[has_data].copy().reset_index(drop=True)
+    subset = df[has_data].copy()
 
     # if no rows have relevant data, return empty log
     if subset.empty:
@@ -126,6 +127,7 @@ def match_check(df, field1, field2, ref_map):
         "observed"       : flagged[field2].values,
         "expected"       : flagged[f'{field2}_from_{field1}'].values,
         "message"        : f"Field '{field2}' does not match expected value based on '{field1}'.",
+        "_inventory_row" : flagged.index.values,
         "_source_file"   : flagged["_source_file"].values,
         "_source_sheet"  : flagged["_source_sheet"].values,
         "_source_row"    : flagged["_source_row"].values
@@ -138,7 +140,7 @@ def check_coords_in_county(df, refs):
     # isolate rows with relevant data
     relevant_fields = ["latitude", "longitude", "geoid"]
     has_data = df[relevant_fields].notna().all(axis=1)
-    subset = df[has_data].copy().reset_index(drop=True)
+    subset = df[has_data].copy()
 
     # if no rows have relevant data, return empty log
     if subset.empty:
@@ -196,6 +198,7 @@ def check_coords_in_county(df, refs):
         "observed"       : flagged['geoid'].values,
         "expected"       : flagged['actual_county'].values,
         "message"        : f"Coordinates are not within the expected county.",
+        "_inventory_row" : flagged.index.values,
         "_source_file"   : flagged["_source_file"].values,
         "_source_sheet"  : flagged["_source_sheet"].values,
         "_source_row"    : flagged["_source_row"].values
