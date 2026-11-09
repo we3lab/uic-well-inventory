@@ -74,7 +74,7 @@ sheets:
         column: "Well Class"
         map:
           "II-D" : "II-D"
-          "V"    : None
+          "V"    : "5X"
     
     well_class:
       mode: crosswalk
