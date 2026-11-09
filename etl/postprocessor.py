@@ -40,6 +40,9 @@ def postprocess_coordinates(coords_df, _resolved, refs):
     coords_df['latitude'] = coords_df['latitude'].astype(float)
     coords_df['longitude'] = coords_df['longitude'].astype(float)
 
+    # if lat/long is zero, set to NaN
+    coords_df.loc[(coords_df['latitude'] == 0) | (coords_df['longitude'] == 0), ['latitude', 'longitude']] = np.nan
+    
     # make sure sign of longitude is negative
     coords_df['longitude'] = coords_df['longitude'].apply(lambda x: -abs(x))
 

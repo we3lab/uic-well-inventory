@@ -234,7 +234,7 @@ def run_all(df, refs):
         'well_id_desc': ['API Number', 'WACS ID', 'Permit Number', 'Well ID', 'Well Name', 'Site ID', 'Site Name'],
         'well_depth_ft_desc': ['LTD', 'DTD', 'MD', 'TVD', 'TIZ', 'UK'],
         'operator_desc': ['Company', 'Permittee', 'Lease Name', 'Site Name'],
-        'date_desc': ['Status Date', 'Spud Date', 'Permit Date', 'Permit Expiration Date', 'Application Date']
+        'date_desc': ['Status Date', 'Spud Date', 'Permit Date', 'Permit Expiration Date', 'Application Date', 'Completion Date', 'First Production Date']
     }
 
     # iterate through valid_set_dict and run validity_check for each field
