@@ -41,6 +41,20 @@ def add_derived_fields(df, refs):
     # TODO: define a globally unique well identifier scheme
     df["unique_id"] = pd.NA
 
+    # --- location_flag_desc -----------------------------------------------------------
+    # map location flag codes to descriptive labels
+    location_flag_to_desc = {
+        "UKCRS": "Unknown source CRS; assumed NAD83.",
+        "OOB": "Reported or calculated coordinates are out of CONUS bounds; assumed invalid or erroneous data entry.",
+        "OOSB": "Reported or calculated coordinates are in incorrect state; assumed invalid or erroneous data entry.",
+        "CCTR": "Coordinates unavailable or invalid; estimated as county centroid.",
+        "SCTR": "Coordinates unavailable; estimated as centroid of PLSS Section.",
+        "RCTR": "Coordinates unavailable; estimated as centroid of PLSS Range.",
+        "ADDR": "Coordinates unavailable; geocoded from street address.",
+        "NOMTCH": "No geocode match available."
+    }
+    df["location_flag_desc"] = df["location_flag"].map(location_flag_to_desc)
+
     # --- state_name -------------------------------------------------------------------
     # lookup from us_states using state_alpha
     state_alpha_to_name = dict(zip(refs["us_states"]["state_alpha"], refs["us_states"]["state_name"]))
@@ -51,7 +65,19 @@ def add_derived_fields(df, refs):
     uic_authority_df = refs["uic_authority"]
     df = df.merge(uic_authority_df[["state_alpha", "well_class", "primacy", "responsible_office"]], on=["state_alpha", "well_class"], how="left")
 
-    # --- well_subytpe_desc ------------------------------------------------------------
+    # --- well_depth_ft_type_desc ------------------------------------------------------
+    # lookup from well_depth_ft_type to get descriptive label
+    well_depth_ft_type_to_desc = {
+        "DTD": "Driller's Total Depth",
+        "LTD": "Logger's Total Depth",
+        "TVD": "Total Vertical Depth",
+        "MD": "Measured Depth",
+        "TIZ": "Top of Injection Zone",
+        "UK": "Unknown Depth Measurement Type"
+    }
+    df["well_depth_ft_type_desc"] = df["well_depth_ft_type"].map(well_depth_ft_type_to_desc)
+
+    # --- well_subtype_desc ------------------------------------------------------------
     # lookup from well_subtypes using well_subtype
     well_subtype_to_desc = dict(zip(refs["well_subtypes"]["well_subtype"], refs["well_subtypes"]["well_subtype_desc"]))
     df["well_subtype_desc"] = df["well_subtype"].map(well_subtype_to_desc)
@@ -73,17 +99,17 @@ def reorder_columns(df):
     """
     output_column_order = [
         "unique_id",
-        "latitude", "longitude", "location_flag",
+        "latitude", "longitude", "location_flag", "location_flag_desc",
         "state_alpha", "state_name",
         "geoid","county_name",
         "epa_region",
         "primacy", "responsible_office",
-        "well_id", "well_id_desc",
+        "well_id", "well_id_type",
         "well_class", "well_subtype", "well_subtype_desc", "well_subtype_raw",
-        "well_depth_ft", "well_depth_ft_desc",
-        "operator", "operator_desc",
+        "well_depth_ft", "well_depth_ft_type", "well_depth_ft_type_desc",
+        "associated_entity", "associated_entity_type",
         "status", "status_raw",
-        "date", "date_desc",
+        "date", "date_type",
         "_source_file", "_source_sheet", "_source_row"
     ]
 

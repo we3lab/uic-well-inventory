@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "API_NO"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "API Number"        
     
@@ -87,14 +87,14 @@ sheets:
       mode: column
       column: "TOP_INJ_ZONE"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "TIZ"
     
-    operator:
+    associated_entity:
       mode: none
     
-    operator_desc:
+    associated_entity_type:
       mode: none
     
     status:
@@ -116,7 +116,7 @@ sheets:
         operation: coalesce
       notes: "W14_DATE applies to Type 1 (disposal); H1_DATE applies to Types 2–8. Columns are mutually exclusive, so max returns whichever is present."
 
-    date_desc:
+    date_type:
       mode: constant
       constant: "Permit Date"
 

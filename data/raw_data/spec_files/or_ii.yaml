@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "PermitID"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Permit Number"        
     
@@ -79,15 +79,15 @@ sheets:
       mode: column
       column: "Depth (ft)"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "UK"
     
-    operator:
+    associated_entity:
       mode: column
       column: "Permittee"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
       constant: "Permitee"
     
@@ -107,7 +107,7 @@ sheets:
       mode: column
       column: "ApplicationDate"
     
-    date_desc:
+    date_type:
       mode: constant
       constant: "Application Date"
     

@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "API_NUMBER"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "API Number"        
     
@@ -98,18 +98,18 @@ sheets:
       mode: column
       column: "TOTAL_DPTH"
 
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "MD"
       notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
     
-    operator:
+    associated_entity:
       mode: column
       column: "OPERATOR"
 
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: crosswalk
@@ -140,7 +140,7 @@ sheets:
       mode: column
       column: "STATUSDATE"
     
-    date_desc:
+    date_type:
       mode: constant
       constant: "Status Date"
     

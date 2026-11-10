@@ -55,7 +55,7 @@ sheets:
     well_id:
       mode: none        
     
-    well_id_desc:
+    well_id_type:
       mode: none        
     
     well_subtype:
@@ -94,14 +94,14 @@ sheets:
     well_depth_ft:
       mode: none
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: none
     
-    operator:
+    associated_entity:
       mode: column
       column: "Facility Name"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
       constant: "Site Name"
     
@@ -123,7 +123,7 @@ sheets:
     date:
       mode: none
     
-    date_desc:
+    date_type:
       mode: none
     
 

@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "Permit Number"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Permit Number"        
     
@@ -79,15 +79,15 @@ sheets:
           pattern: 'fr\s+(\d+)'
           group: 1
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "TIZ"
     
-    operator:
+    associated_entity:
       mode: column
       column: "Facility Name"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
       constant: "Site Name"
     
@@ -100,7 +100,7 @@ sheets:
     date:
       mode: none
     
-    date_desc:
+    date_type:
       mode: none
     
 

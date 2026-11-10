@@ -68,7 +68,7 @@ sheets:
       mode: column
       column: "Permit #"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Permit Number"        
     
@@ -93,15 +93,15 @@ sheets:
       mode: column
       column: "Total Depth"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "MD"
       notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
     
-    operator:
+    associated_entity:
       mode: none
     
-    operator_desc:
+    associated_entity_type:
       mode: none
     
     status:
@@ -125,7 +125,7 @@ sheets:
     date:
       mode: none
     
-    date_desc:
+    date_type:
       mode: none
   
   "R8 Perfs":
@@ -179,7 +179,7 @@ sheets:
       mode: column
       column: "Permit #"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Permit Number"        
     
@@ -204,15 +204,15 @@ sheets:
       mode: column
       column: "Total Depth"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "MD"
       notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
     
-    operator:
+    associated_entity:
       mode: none
     
-    operator_desc:
+    associated_entity_type:
       mode: none
     
     status:
@@ -234,5 +234,5 @@ sheets:
     date:
       mode: none
     
-    date_desc:
+    date_type:
       mode: none

@@ -61,7 +61,7 @@ sheets:
       mode: column
       column: "p_state_id"
 
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Well ID"       
     
@@ -85,18 +85,18 @@ sheets:
       mode: column
       column: "TOTAL_DEPTH"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "MD"
       notes: "Depth reported as Total Depth and assumed to be representative of Measured Depth."
     
-    operator:
+    associated_entity:
       mode: column
       column: "fac_name"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: none
@@ -107,7 +107,7 @@ sheets:
     date:
       mode: none
     
-    date_desc:
+    date_type:
       mode: none
     
 

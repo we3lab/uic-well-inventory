@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "WACS ID"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "WACS ID"        
     
@@ -119,15 +119,15 @@ sheets:
           pattern: "^(\\d+)-"
           group: 1
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "TIZ"
     
-    operator:
+    associated_entity:
       mode: column
       column: "Site Name"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
       constant: "Site Name"
     
@@ -160,6 +160,6 @@ sheets:
       mode: column
       column: "Facility Status Date"
     
-    date_desc:
+    date_type:
       mode: constant
       constant: "Status Date"

@@ -156,6 +156,7 @@ def check_coords_in_county(df, refs):
     # create parallel gdf of county geometries corresponding to each row in gf
     us_counties = refs['us_counties'][['geoid','geometry']].copy()
     labeled_county_geoms = us_counties.set_index('geoid').loc[gdf['geoid']].reset_index()
+    labeled_county_geoms.index = gdf.index  # align index for element-wise distance calculation
 
     # convert to a projected CRS for distance calculation
     gdf = gdf.to_crs('EPSG:3857')
@@ -233,11 +234,11 @@ def run_all(df, refs):
         'well_class' : refs['well_subtypes']['well_class'].unique(),
         'well_subtype' : refs['well_subtypes']['well_subtype'].unique(),
         
-        # _desc cols
-        'well_id_desc': ['API Number', 'WACS ID', 'Permit Number', 'Well ID', 'Well Name', 'Site ID', 'Site Name'],
-        'well_depth_ft_desc': ['LTD', 'DTD', 'MD', 'TVD', 'TIZ', 'UK'],
-        'operator_desc': ['Company', 'Permittee', 'Lease Name', 'Site Name'],
-        'date_desc': ['Status Date', 'Spud Date', 'Permit Date', 'Permit Expiration Date', 'Application Date', 'Completion Date', 'First Production Date']
+        # _type cols
+        'well_id_type': ['API Number', 'WACS ID', 'Permit Number', 'Well ID', 'Well Name', 'Site ID', 'Site Name'],
+        'well_depth_ft_type': ['LTD', 'DTD', 'MD', 'TVD', 'TIZ', 'UK'],
+        'associated_entity_type': ['Operator', 'Permittee', 'Lease Name', 'Site Name'],
+        'date_type': ['Status Date', 'Spud Date', 'Permit Date', 'Permit Expiration Date', 'Application Date', 'Completion Date', 'First Production Date']
     }
 
     # iterate through valid_set_dict and run validity_check for each field

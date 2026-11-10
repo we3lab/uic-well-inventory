@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "API"
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "API Number"
     
@@ -92,17 +92,17 @@ sheets:
       column: "DTD"
       notes: "DTD selected among DTD, LTD, TVD, and MD as the depth feature with the most complete data coverage."
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "DTD"
 
-    operator:
+    associated_entity:
       mode: column
       column: "Operator"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: crosswalk
@@ -126,7 +126,7 @@ sheets:
       mode: column
       column: "StatusDate"
 
-    date_desc:
+    date_type:
       mode: constant
       constant: "Status Date"
 

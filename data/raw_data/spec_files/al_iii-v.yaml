@@ -64,7 +64,7 @@ sheets:
       mode: column
       column: "Permit Number"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Permit Number"        
     
@@ -118,14 +118,14 @@ sheets:
     well_depth_ft:
       mode: none
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: none
     
-    operator:
+    associated_entity:
       mode: column
       column: "Permittee"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
       constant: "Permittee"
     
@@ -148,7 +148,7 @@ sheets:
       mode: column
       column: "Effective Date"
     
-    date_desc:
+    date_type:
       mode: constant
       constant: "Permit Date"
     

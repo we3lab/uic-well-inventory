@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "UIC_PERMIT"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Permit Number"        
     
@@ -99,14 +99,14 @@ sheets:
     well_depth_ft:
       mode: none
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: none
     
-    operator:
+    associated_entity:
       mode: column
       column: "Fac_Name"
 
-    operator_desc:
+    associated_entity_type:
       mode: constant
       constant: "Site Name"
     
@@ -120,7 +120,7 @@ sheets:
       mode: column
       column: "Exp_Date"
 
-    date_desc:
+    date_type:
       mode: constant
       constant: "Permit Expiration Date"
     

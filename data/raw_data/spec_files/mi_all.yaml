@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "api_num"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "API Number"        
     
@@ -107,17 +107,17 @@ sheets:
       mode: column
       column: "DTD"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "DTD"
     
-    operator:
+    associated_entity:
       mode: column
       column: "CompanyName"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: crosswalk
@@ -152,7 +152,7 @@ sheets:
       mode: column
       column: "PermitDate"
 
-    date_desc:
+    date_type:
       mode: constant
       constant: "Permit Date"
     

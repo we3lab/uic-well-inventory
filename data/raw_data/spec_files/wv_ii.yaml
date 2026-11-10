@@ -57,7 +57,7 @@ sheets:
       mode: column
       column: "API #"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "API Number"        
     
@@ -82,17 +82,17 @@ sheets:
           pattern: '^(\d+)-'
           group: 1
 
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "TIZ"
     
-    operator:
+    associated_entity:
       mode: column
       column: "UIC Permit Operator / RP"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: crosswalk
@@ -109,7 +109,7 @@ sheets:
     date:
       mode: none
     
-    date_desc:
+    date_type:
       mode: none
   
   "WV 2R Wells":
@@ -153,7 +153,7 @@ sheets:
       mode: column
       column: "API No."        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "API Number"        
     
@@ -172,16 +172,16 @@ sheets:
     well_depth_ft:
       mode: none
 
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: none
     
-    operator:
+    associated_entity:
       mode: column
       column: "Operator"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: crosswalk
@@ -198,7 +198,7 @@ sheets:
     date:
       mode: none
     
-    date_desc:
+    date_type:
       mode: none
     
 

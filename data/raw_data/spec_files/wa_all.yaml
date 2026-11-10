@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "WellName"        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Well ID"        
     
@@ -100,17 +100,17 @@ sheets:
       mode: column
       column: "Well Depth"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "UK"
     
-    operator:
+    associated_entity:
       mode: column
       column: "Well Owner Name"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: crosswalk
@@ -130,7 +130,7 @@ sheets:
       mode: column
       column: "Well Construction Date"
     
-    date_desc:
+    date_type:
       mode: constant
       constant: "Completion Date"
       notes: "Unsure if Well Construction Date is the same as Completion Date or Spud Date. Assuming Completion Date."

@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "Well No."        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Well ID"        
     
@@ -74,18 +74,18 @@ sheets:
       mode: column
       column: "Well depth (below land surface (bls), ft)"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "UK"
       notes: "Depth reported as Well Depth but unsure of what it represents."
     
-    operator:
+    associated_entity:
       mode: column
       column: "Operator"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: none
@@ -97,7 +97,7 @@ sheets:
       mode: column
       column: "Date Well Construction Completed"
     
-    date_desc:
+    date_type:
       mode: constant
       constant: "Completion Date"
       

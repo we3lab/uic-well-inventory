@@ -107,7 +107,7 @@ sheets:
       mode: column
       column: "Well Serial"
 
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Well ID" 
     
@@ -161,14 +161,14 @@ sheets:
       mode: column
       column: "Measured Depth"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "MD"
     
-    operator:
+    associated_entity:
       mode: none
     
-    operator_desc:
+    associated_entity_type:
       mode: none
     
     status:
@@ -187,7 +187,7 @@ sheets:
       mode: column
       column: "Well Status Date"
     
-    date_desc:
+    date_type:
       mode: constant
       constant: "Status Date"
     

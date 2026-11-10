@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "Illinois ID."        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Well ID"        
     
@@ -149,16 +149,16 @@ sheets:
     well_depth_ft:
       mode: none
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: none
     
-    operator:
+    associated_entity:
       mode: column
       column: "Organization"
     
-    operator_desc:
+    associated_entity_type:
       mode: constant
-      constant: "Company"
+      constant: "Operator"
     
     status:
       mode: none
@@ -170,7 +170,7 @@ sheets:
       mode: column
       column: "FIRST_ENTE"
     
-    date_desc:
+    date_type:
       mode: constant
       constant: "Application Date"
       notes: "Assuming that the first entry date is the application date, as no other date information is provided in the source data."

@@ -56,7 +56,7 @@ sheets:
       mode: column
       column: "API No."        
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "API Number"        
     
@@ -75,13 +75,13 @@ sheets:
     well_depth_ft:
       mode: none
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: none
     
-    operator:
+    associated_entity:
       mode: none
     
-    operator_desc:
+    associated_entity_type:
       mode: none
     
     status:
@@ -99,7 +99,7 @@ sheets:
     date:
       mode: none
     
-    date_desc:
+    date_type:
       mode: none
     
 

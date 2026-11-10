@@ -57,7 +57,7 @@ sheets:
       mode: column
       column: "Well Name"
     
-    well_id_desc:
+    well_id_type:
       mode: constant
       constant: "Well Name"
     
@@ -80,15 +80,15 @@ sheets:
       mode: column
       column: "Well Specific Depth (ft)"
     
-    well_depth_ft_desc:
+    well_depth_ft_type:
       mode: constant
       constant: "UK"
       notes: "Column is labeled Well Specific Depth which does not map to any known well depth measurement."
 
-    operator:
+    associated_entity:
       mode: none
 
-    operator_desc:
+    associated_entity_type:
       mode: none
 
     status:
@@ -100,5 +100,5 @@ sheets:
     date:
       mode: none
 
-    date_desc:
+    date_type:
       mode: none
