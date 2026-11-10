@@ -7,9 +7,9 @@
 # This script loads and caches reference tables used during field processing
 
 # Available Reference Tables:
-#   - us_states       (conus_state_boundaries.geojson) — used for spatial state_alpha
+#   - us_states       (tl_2026_us_state) — used for spatial state_alpha
 #                     lookups. Loaded as a GeoDataFrame for point-in-polygon queries.
-#   - us_counties     (conus_county_boundaries.geojson) — used for spatial and tabular
+#   - us_counties     (tl_2026_us_county) — used for spatial and tabular
 #                     county/geoid lookups. Loaded as a GeoDataFrame so it can serve
 #                     both point-in-polygon spatial queries and key-based tabular joins.
 #                     state_alpha is joined in from us_states (via statefp) at load time
@@ -27,8 +27,8 @@
 # repeated calls across sheets and files do not re-read from disk.
 
 # Expected file locations (relative to the project data/ directory):
-#   data/shapefiles/conus_state_boundaries.geojson
-#   data/shapefiles/conus_county_boundaries.geojson
+#   data/shapefiles/tl_2026_us_state
+#   data/shapefiles/tl_2026_us_county
 #   data/shapefiles/blm_plss.gdb
 #   data/supporting_data/uic_authority.xlsx
 #   data/supporting_data/well_subtypes.xlsx
@@ -36,6 +36,7 @@
 #######################################################################################
 
 from pathlib import Path
+import warnings
 
 import pandas as pd
 import geopandas as gpd
@@ -76,12 +77,33 @@ def load():
     supporting_data_dir = Path(PROJECT_ROOT / "data" / "supporting_data")
 
     # load reference tables
-    us_states = gpd.read_file(shapefiles_dir / "conus_state_boundaries.geojson")[["state_alpha", "state_name", "statefp", "geometry"]].to_crs(TARGET_CRS)
-    us_counties = gpd.read_file(shapefiles_dir / "conus_county_boundaries.geojson")[["geoid", "statefp", "county_name", "geometry"]].to_crs(TARGET_CRS)
+    # states
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="Geometry of polygon.*cannot be translated", category=RuntimeWarning)
+        us_states = gpd.read_file(shapefiles_dir / "tl_2026_us_state").to_crs(TARGET_CRS)
+    us_states = us_states.rename(columns={"STUSPS": "state_alpha", "NAME": "state_name", "STATEFP": "statefp"})
+    us_states = us_states[["state_alpha", "state_name", "statefp", "geometry"]] # only keep relevant columns
+    us_states = us_states[~us_states['state_alpha'].isin(['AK','HI','PR','MP','GU','VI','AS'])] # drop rows outside CONUS
+    us_states = us_states.sort_values(by='state_alpha').reset_index(drop=True) # sort by state_alpha for easier debugging
+
+    # counties
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="Geometry of polygon.*cannot be translated", category=RuntimeWarning)
+        us_counties = gpd.read_file(shapefiles_dir / "tl_2026_us_county").to_crs(TARGET_CRS)
+    us_counties = us_counties.rename(columns={"GEOID": "geoid", "STATEFP": "statefp", "NAME": "county_name"})
+    us_counties = us_counties[["geoid", "statefp", "county_name", "geometry"]] # only keep relevant columns
+    us_counties = us_counties[us_counties['statefp'].isin(us_states['statefp'])] # drop rows outside CONUS
     us_counties = us_counties.merge(us_states[["statefp", "state_alpha"]], on="statefp", how="left") # add state alpha to counties df
+    us_counties['geoid'] = us_counties['geoid'].str.zfill(5) # ensure geoid is string for consistent joins
+    us_counties = us_counties.sort_values(by=['state_alpha', 'geoid']).reset_index(drop=True) # sort by state_alpha and geoid for easier debugging
+
+
+    # blm plss
     blm_plss = gpd.read_file(shapefiles_dir / "blm_plss.gdb", layer="PLSSFirstDivision").to_crs('EPSG:3857')
     blm_plss.index = blm_plss['FRSTDIVID'].astype(str)
     blm_plss = blm_plss.drop(columns=['FRSTDIVID'])
+
+    # uic authority and well subtypes
     uic_authority = pd.read_excel(supporting_data_dir / "uic_authority.xlsx", dtype=str)
     well_subtypes = pd.read_excel(supporting_data_dir / "well_subtypes.xlsx", dtype=str)
 
