@@ -1,5 +1,5 @@
 # Custom tracking
-data/shapefiles/blm_plss.gdb
+data/shapefiles/
 *sandbox.ipynb
 data/processed_data
 spec_template.yaml
