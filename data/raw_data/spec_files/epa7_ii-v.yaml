@@ -66,15 +66,11 @@ sheets:
         column: "Well Class"
         map:
           "II-D" : "2D"
-          "V"    : None
+          "V"    : "5X"
 
     well_subtype_raw:
-      mode: crosswalk
-      crosswalk:
-        column: "Well Class"
-        map:
-          "II-D" : "II-D"
-          "V"    : "5X"
+      mode: column
+      column: "Well Class"
     
     well_class:
       mode: crosswalk
