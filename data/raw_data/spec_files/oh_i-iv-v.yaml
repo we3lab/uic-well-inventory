@@ -9,7 +9,7 @@ provenance:
   agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
   source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
   date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
-  notes: ""    # any notes on the file itself (processing steps, etc.)
+  notes: "An additional column was added - Well Type and Subtype - that concatenates the Well Type and Well Subtype columns to ensure the appropriate well subtype classification is assigned to each row."    # any notes on the file itself (processing steps, etc.)
 
 ##############################################################
 ### SPECS
@@ -61,26 +61,29 @@ sheets:
     well_subtype:
       mode: crosswalk
       crosswalk:
-        column: "Type of Well"
+        column: "Well Type and Subtype"
         map:
-          "Hazardous Waste": "1H"
-          "Non-Hazardosu Industrial": "1I"
-          "Non-Hazardous Waste": "1X"
-          "Remediation Wells": "4A"
-          "Cooling Water Return": "5A"
-          "Drinking Water Treatment Residual": "5A23"
-          "HeatPump Return Wells": "5C2"
-          "Kennels/Vets": "5A15"
-          "Large Capacity Cesspool": "5E"
-          "Large Capacity Septic System": "5F"
-          "Mine Backfill Wells": "5I"
-          "Motor Vehicle Waste Disposal Well": "5K"
-          "Non-Hazardous Industrial": "5A"
-          "Stormwater Drainage Wells": "5H1"
+          "Class I - Hazardous Waste": "1H"
+          "Class I - Non-Hazardosu Industrial": "1I"
+          "Class I - Non-Hazardous Waste": "1X"
+          "Class IV - Hazardous Waste": "4X"
+          "Class IV - Remediation Wells": "4A"
+          "Class V - Cooling Water Return": "5A"
+          "Class V - Drinking Water Treatment Residual": "5A23"
+          "Class V - HeatPump Return Wells": "5C2"
+          "Class V - Kennels/Vets": "5A15"
+          "Class V - Large Capacity Cesspool": "5E"
+          "Class V - Large Capacity Septic System": "5F"
+          "Class V - Mine Backfill Wells": "5I"
+          "Class V - Motor Vehicle Waste Disposal Well": "5K"
+          "Class V - Non-Hazardous Industrial": "5A"
+          "Class V - Non-Hazardous Waste": "5X"
+          "Class V - Remediation Wells": "5B6"
+          "Class V - Stormwater Drainage Wells": "5H1"
 
     well_subtype_raw:
       mode: column
-      column: "Type of Well"
+      column: "Well Type and Subtype"
     
     well_class:
       mode: extract
