@@ -89,7 +89,7 @@ sheets:
     
     associated_entity_type:
       mode: constant
-      constant: "Permitee"
+      constant: "Permittee"
     
     status:
       mode: crosswalk
