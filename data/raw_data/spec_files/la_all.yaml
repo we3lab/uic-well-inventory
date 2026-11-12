@@ -37,6 +37,7 @@ sheets:
               map:
                 "W" : 18
                 "E" : 24
+              notes: "The source data uses 'W' and 'E', which were mapped to the corresponding meridian numbers (18 and 24, respectively) based on the Louisiana PLSS system."
           township_num:
             mode: extract
             extract:
