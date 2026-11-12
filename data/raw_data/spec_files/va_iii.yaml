@@ -62,7 +62,7 @@ sheets:
     
     well_id_type:
       mode: constant
-      constant: "Well ID Number"        
+      constant: "Well ID"        
     
     well_subtype:
       mode: none
