@@ -362,7 +362,8 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
             'meridian': 2, 
             'township_num': 3, 
             'range_num': 3, 
-            'section': 2}
+            'section': 2
+        }
 
         required_plss_fields = ['meridian', 'township_num', 'township_dir', 'range_num', 'range_dir', 'section']
 
@@ -386,17 +387,9 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
         
         plss_df['plss_id'] = plss_df.apply(_generate_plss_id, axis=1)
 
-        # load reference table of PLSS parcels from BLM (use pre-loaded ref if available)
-        if refs is not None and 'blm_plss' in refs:
-            blm_df = refs['blm_plss']
-        else:
-            try:
-                blm_df = gpd.read_file(PROJECT_ROOT / 'data/shapefiles/blm_plss.gdb', layer='PLSSFirstDivision').to_crs('EPSG:3857')
-                blm_df.index = blm_df['FRSTDIVID'].astype(str)
-                blm_df.drop(columns=['FRSTDIVID'], inplace=True)
-            except:
-                raise FileNotFoundError(f"BLM PLSS shapefile not found. Please ensure the file exists at {PROJECT_ROOT / 'data/shapefiles/blm_plss.gdb'}. If not, the file can be downloaded directly from https://gbp-blm-egis.hub.arcgis.com/datasets/283939812bc34c11bad695a1c8152faf/about.")
-
+        # load reference table of PLSS parcels from BLM
+        blm_df = refs['blm_plss'].to_crs('EPSG:3857') # convert to web mercator for centroid calculations
+    
         # get parcel coordinates from BLM shapefile based on PLSS ID
         def _get_parcel_coords(plss_id):
             if plss_id in blm_df.index:
@@ -409,7 +402,7 @@ def mode_geocode(field_name, spec, df, _resolved, refs):
                 match = blm_df[blm_df.index.str.startswith(plss_id_range)]
                 if not match.empty:
                     union_pt = match.union_all().centroid
-                    centroid = gpd.GeoSeries([union_pt], crs='EPSG:3857').to_crs(TARGET_CRS).iloc[0]
+                    centroid = gpd.GeoSeries([union_pt], crs='EPSG:3857').to_crs(TARGET_CRS).iloc[0] # convert back to target CRS
                     return pd.Series({'latitude': centroid.y, 'longitude': centroid.x, 'location_flag': "RCTR"})
                 else:
                     return pd.Series({'latitude': np.nan, 'longitude': np.nan, 'location_flag': "NOMTCH"})
@@ -483,6 +476,15 @@ def mode_locate(field_name, _spec, df, resolved, refs):
     # ensure the reference geodataframe is in the target CRS
     if gdf.crs != TARGET_CRS:
         gdf = gdf.to_crs(TARGET_CRS)
+
+    # if locating at county level and state_alpha is already resolved, restrict to that state
+    if level == 'counties' and 'state_alpha' in resolved:
+        state_alpha = resolved['state_alpha']
+        if isinstance(state_alpha, pd.Series):
+            unique_states = state_alpha.dropna().unique()
+            gdf = gdf[gdf['state_alpha'].isin(unique_states)]
+        elif pd.notna(state_alpha):
+            gdf = gdf[gdf['state_alpha'] == state_alpha]
     
     # create a GeoDataFrame from the resolved latitude and longitude
     if 'latitude' not in resolved or 'longitude' not in resolved:

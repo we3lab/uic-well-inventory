@@ -3,6 +3,7 @@ data/shapefiles/
 *sandbox.ipynb
 data/processed_data
 spec_template.yaml
+notes.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

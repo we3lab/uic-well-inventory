@@ -174,16 +174,15 @@ def check_coords_in_county(df, refs):
         return pd.DataFrame(columns=VALIDATION_LOG_COLUMNS)
 
     # otherwise, flag severity based on distance to labeled county
-    # 0-10 km = low severity, 10-100 km = medium severity, >100 km = high severity
+    # <10 km = low severity, >10 km = high severity
     flagged['severity'] = pd.cut(
         flagged['distance_to_county'],
-        bins=[0, 10000, 100000, np.inf],
-        labels=['low', 'medium', 'high']
+        bins=[0, 10000, np.inf],
+        labels=['low', 'high']
     )
     flagged['severity_desc'] = flagged['severity'].map({
         'low' : '<10 km',
-        'medium' : '10-100 km',
-        'high' : '>100 km'
+        'high' : '>10 km'
     })
 
     # identify county that the point is actually in (if any)
