@@ -6,10 +6,11 @@
 ### DATA SOURCE
 ##############################################################
 provenance:
-  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
-  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
-  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
-  notes: ""    # any notes on the file itself (processing steps, etc.)
+  agency: "KS Department of Health and Environment"    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: "Jamie.Packard@ks.gov"	# email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: "2026-10-08"	# date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: "Acquired through KORA request #26-1803."  # any notes on the file itself (processing steps, etc.)
+
 
 ##############################################################
 ### SPECS

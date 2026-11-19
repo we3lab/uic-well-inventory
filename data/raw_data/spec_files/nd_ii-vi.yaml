@@ -6,17 +6,18 @@
 ### DATA SOURCE
 ##############################################################
 provenance:
-  agency: ""    # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
-  source_address: ""    # email (if provided by a person) or URL (if downloaded from a website)
-  date_retrieved: ""    # date the data was retrieved/received from the source (YYYY-MM-DD)
-  notes: ""    # any notes on the file itself (processing steps, etc.)
+  agency: "ND Industrial Commission, Oil and Gas Division"   # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
+  source_address: "https://gis.dmr.nd.gov/downloads/oilgas/shapefile/OGD_Wells.zip"	# email (if provided by a person) or URL (if downloaded from a website)
+  date_retrieved: "2026-09-28"	# date the data was retrieved/received from the source (YYYY-MM-DD)
+  notes: "Attributes extracted from shapefile and saved to .xslx file."	# any notes on the file itself (processing steps, etc.)
+
 
 ##############################################################
 ### SPECS
 ##############################################################
 sheets:
 
-  "Sheet1":
+  "OGD_Wells":
 
     load_specs:
       header_row: 0       # 0-indexed row number of the header row in the source sheet
@@ -25,12 +26,12 @@ sheets:
     coordinates: # only applicable to coordinates field name
       mode: reproject
       reproject:
-        x_columns: "longitude,N,19,11"   # source column(s) for x-coordinate values (longitude)
-        y_columns: "latitude,N,19,11"  # source column(s) for y-coordinate values (latitude)
+        x_columns: "longitude"   # source column(s) for x-coordinate values (longitude)
+        y_columns: "latitude"  # source column(s) for y-coordinate values (latitude)
         input_format: "dd" # input format: dd | dd_combined |dms_colon | dms_compact | dms_expanded | northing_easting
         datum:                # source datum (coordinate reference system) of the input coordinates (e.g., EPSG:26917). Put mode none if unknown.
-          mode: none
-      notes: "Unknown source CRS. Assuming NAD83 (EPSG:4269)."     
+          mode: constant
+          constant: "EPSG:4269"   
     
     state_alpha:
       mode: constant
@@ -42,7 +43,7 @@ sheets:
     
     county_name:
       mode: column
-      column: "County,C,50"       
+      column: "County"       
     
     geoid:
       mode: lookup
@@ -54,7 +55,7 @@ sheets:
     
     well_id:
       mode: column
-      column: "api_no,C,25"
+      column: "api_no"
 
     well_id_type:
       mode: constant
@@ -63,7 +64,7 @@ sheets:
     well_subtype:
       mode: crosswalk
       crosswalk:
-        column: "well_type,C,24"
+        column: "well_type"
         map:
           "OG": "0X"
           "WI": "2R"
@@ -92,7 +93,7 @@ sheets:
     well_subtype_raw:
       mode: crosswalk
       crosswalk:
-        column: "well_type,C,24"
+        column: "well_type"
         map:
           "OG": "Oil & Gas"
           "WI": "Water Injection"
@@ -128,7 +129,7 @@ sheets:
     
     well_depth_ft:
       mode: column
-      column: "td,N,10,0"
+      column: "td"
 
     well_depth_ft_type:
       mode: constant
@@ -137,7 +138,7 @@ sheets:
     
     associated_entity:
       mode: column
-      column: "operator,C,100"
+      column: "operator"
 
     associated_entity_type:
       mode: constant
@@ -146,7 +147,7 @@ sheets:
     status:
       mode: crosswalk
       crosswalk:
-        column: "status,C,24"
+        column: "status"
         map:
           "DRY": "Inactive"
           "PA": "Inactive"
@@ -172,7 +173,7 @@ sheets:
     status_raw:
       mode: crosswalk
       crosswalk:
-        column: "status,C,24"
+        column: "status"
         map:
           "DRY": "Dry Hole"
           "PA": "Plugged and Abandoned"
@@ -197,7 +198,7 @@ sheets:
     
     date:
       mode: column
-      column: "spud_date,D"
+      column: "spud_date"
 
     date_type:
       mode: constant

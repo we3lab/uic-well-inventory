@@ -9,7 +9,7 @@ provenance:
   agency: "KY Office of Administrative Services, Energy & Environment Cabinet"     # name of agency from which dataset was retrieved (e.g. WV Dept of Environmental Protection, EPA Region 3, etc.)
   source_address: "capellan.mcfarland@ky.gov"    # email (if provided by a person) or URL (if downloaded from a website)
   date_retrieved: "2025-11-13"    # date the data was retrieved/received from the source (YYYY-MM-DD)
-  notes: "FOIA request made by Isabel Escobar (UKY), as only KY residents could make requests."    # any notes on the file itself (processing steps, etc.)
+  notes: "Acquired through FOIA request made by Isabel Escobar (University of Kentucky), as only Kentucky residents are able to make requests." # any notes on the file itself (processing steps, etc.)
 
 ##############################################################
 ### SPECS
